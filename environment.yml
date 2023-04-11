@@ -1,0 +1,6 @@
+name: cs156b
+channels:
+  - defaults
+dependencies:
+  - pandas
+# prefix: /Users/bshare/opt/anaconda3/envs/cs156b
