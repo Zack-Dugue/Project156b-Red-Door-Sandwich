@@ -26,4 +26,4 @@ for idx, series in output_df.iterrows():
 output_df = output_df.drop('Path', axis=1)
 combined  = pd.concat([output_df, output_data], axis=1)
 
-combined.to_csv("outputs/SampleOutput.csv", sep=',', header=False, index=False)
+combined.to_csv("outputs/SampleOutput.csv", sep=',', header=True, index=False)
