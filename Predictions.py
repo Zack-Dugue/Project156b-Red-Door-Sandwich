@@ -1,7 +1,8 @@
 import pandas as pd
 import os
 import time
-
+import math
+import random
 
 class Predictions:
     def __init__(self):
@@ -11,7 +12,7 @@ class Predictions:
         self.model_path = "model.tf"
         # Choose value probabalistically, or by rounding
         # Options: 'round', 'prob'
-        self.mode = 'round'
+        self.mode = 'prob'
         
         self.ingest_test_csv()
         self.ingest_train_csv()
@@ -105,8 +106,13 @@ class Predictions:
         Returns:
             dict: dictionary of prediction
         """
-        # Does some stuff
-        return pd.Series(prediction, index=self.labels)
+        if self.mode == 'round':
+            output = [round(pred) for pred in prediction]
+        
+        if self.mode == 'prob':
+            output = (int(math.floor(pred + random.random())) for pred in prediction)
+        # turns values into series
+        return pd.Series(output, index=self.labels)
     
 
     def save_output(self, output_df):
