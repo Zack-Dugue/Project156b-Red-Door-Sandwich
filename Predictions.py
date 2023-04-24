@@ -12,7 +12,7 @@ class Predictions:
         self.model_path = "model.tf"
         # Choose value probabalistically, or by rounding
         # Options: 'round', 'prob'
-        self.mode = 'prob'
+        self.mode = 'round'
         
         self.ingest_test_csv()
         self.ingest_train_csv()
@@ -53,7 +53,7 @@ class Predictions:
 
         # Convert rows to ints
         output_df = output_df.astype(int)
-        print(output_df.dtypes)
+        
         # output_df is fully formed, now must save to file
         self.save_output(output_df)
 
