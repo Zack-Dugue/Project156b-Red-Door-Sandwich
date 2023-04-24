@@ -9,6 +9,9 @@ class Predictions:
         self.train_labels_filepath = "data/train2023.csv"
         self.output_folder = "outputs/"
         self.model_path = "model.tf"
+        # Choose value probabalistically, or by rounding
+        # Options: 'round', 'prob'
+        self.mode = 'round'
         
         self.ingest_test_csv()
         self.ingest_train_csv()
@@ -40,8 +43,16 @@ class Predictions:
             path = self.paths_dict[id]
             prediction = self.__generate_prediction(path, consts)
             prediction["Id"] = id
-            predictions.append(prediction)
-        output_df = pd.concat(predictions)
+            # print(prediction)
+            predictions.append(prediction.to_frame().T)
+        output_df = pd.concat(predictions, axis=0)
+        # Rearange columns
+        cols = output_df.columns.to_list()
+        output_df = output_df[cols[-1:] + cols[:-1]]
+
+        # Convert rows to ints
+        output_df = output_df.astype(int)
+        print(output_df.dtypes)
         # output_df is fully formed, now must save to file
         self.save_output(output_df)
 
@@ -95,7 +106,7 @@ class Predictions:
             dict: dictionary of prediction
         """
         # Does some stuff
-        return pd.Series(self.labels, prediction)
+        return pd.Series(prediction, index=self.labels)
     
 
     def save_output(self, output_df):
@@ -106,7 +117,7 @@ class Predictions:
         """
         time_string = time.strftime("%Y%m%d-%H%M%S")
         filepath = os.path.join(self.output_folder, time_string + '.csv')
-        output_df.to_csv(filepath, sep=',', header=False, index=False)
+        output_df.to_csv(filepath, sep=',', header=True, index=False)
 
 
 
