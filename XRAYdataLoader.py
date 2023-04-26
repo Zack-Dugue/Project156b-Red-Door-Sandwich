@@ -35,7 +35,9 @@ class XrayDataset(Dataset):
             label = self.target_transform(label)
         #Might have to reformat this:
         # IE Image,X might need to be ina  tuple or something
-        return image, X, Y
+        # TODO: Include frontal vs Lateral or PA AP if in file name
+        # TODO: Nan Masking
+        return (image, X), Y
 
 def make_custom_dataloader(*args, train = True):
     """
@@ -44,7 +46,7 @@ def make_custom_dataloader(*args, train = True):
     :return:
     """
     dataset = CustomImageDataset()
-
+    # return DataLoader(dataset, batch_size, shuffle=True )
 def train_image_transform(*args):
     """
     Returns a transfrom which performs image augmentations during training

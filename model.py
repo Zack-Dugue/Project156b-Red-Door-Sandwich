@@ -39,12 +39,9 @@ class XRAYModel(LightningModule):
         x = self.drop2(x)
         x = self.fc3(x)
         x = self.act3(x)
-        predict = th.zeros_like(x)
-        predict[x < 1 / 3] = -1
-        predict[x > 2 / 3] = 1
         # TODO handle the whole "no finding" thing.
 
-        return x,predict
+        return x
 
 
 if __name__ =="__main__":
