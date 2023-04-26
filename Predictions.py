@@ -3,13 +3,15 @@ import os
 import time
 import math
 import random
+from main import XrayModule
+from torchvision.io import read_image
 
 class Predictions:
     def __init__(self):
         self.test_ids_filepath = "data/test_ids.csv"
         self.train_labels_filepath = "data/train2023.csv"
         self.output_folder = "outputs/"
-        self.model_path = "model.tf"
+        self.model_path = "model.ckpt"
         # Choose value probabalistically, or by rounding
         # Options: 'round', 'prob'
         self.mode = 'round'
@@ -32,7 +34,8 @@ class Predictions:
     
     def load_model(self):
         # do something...
-        self.model = 1
+        self.model = XrayModule.load_from_checkpoint(self.model_path)
+        self.model.eval()
 
 
     def generate_predictions(self):
@@ -69,15 +72,15 @@ class Predictions:
             dict: result dict of 9 possibilities
         """
         # load image
-        img = "image"
+        img = read_image(path)
 
         # extract features
         features = self.get_features(path)
 
-        # prediction = self.model.predict((img, features))
+        prediction = self.model(img)
         
         # for simple case
-        prediction = consts.to_numpy()
+        #prediction = consts.to_numpy()
 
         prediction = self.format_prediction(prediction)
         
