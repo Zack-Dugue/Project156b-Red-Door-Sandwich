@@ -1,11 +1,11 @@
 import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision as TV
+import torchvision as tv
 import pytorch_lightning as pl
 from pytorch_lightning.core import LightningModule
 import tensorboard
-from XRAYdataLoader import CustomDataLoader
+from XRAYdataLoader import make_data_loader
 from model import XRAYModel
 import time
 import sys
@@ -21,13 +21,14 @@ class XrayModule(LightningModule):
     def forward(self,x):
         return self.model(x)
 
+    def on_train_epoch_start(self) -> None:
+        self.model.train(False)
+
     def training_step(self,batch,batch_idx):
         x ,y  = batch
         #Handle NAN Masking:
-        self.model.eval()
-        y_hat = self(x)[0]
-        self.model.train(False)
-        loss = self.LossFun(y_hat*nan_mask,y)
+        y_hat = self(x)
+        loss = self.LossFun(y_hat,F.one_hot(y,num_classes = 10).to(th.float32))
         tensorboard_logs = {'train_loss':loss}
         return {'loss':loss,'log':tensorboard_logs}
 
@@ -38,36 +39,60 @@ class XrayModule(LightningModule):
     def validation_step(self,batch,batch_idx):
         x, y = batch
         y_hat = self(x)
+        self.model.train(False)
         loss = self.LossFun(y_hat, y)
         tensorboard_logs = {'validation_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
 
-    def validation_epoch_end(self,outputs):
-        avg_loss = th.stack([x['loss'] for x in outputs]).mean()
-        tensorboard_logs = {'val_loss': avg_loss}
-        return {'val_loss': avg_loss, 'log': tensorboard_logs}
-def experiment(path,num_nodes,num_dataloaders,batch_size,learning_rate,num_epochs):
-    accelerator = th.device
+    # def on_validation_epoch_end(self,outputs):
+    #     avg_loss = th.stack([x['loss'] for x in outputs]).mean()
+    #     tensorboard_logs = {'val_loss': avg_loss}
+    #     return {'val_loss': avg_loss, 'log': tensorboard_logs}
+def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_rate,num_epochs):
+    if th.device != 'cuda':
+        accelerator = "cpu"
     if num_nodes== 1:
         strategy = "auto"
     else:
         strategy = pl.DDPStrategy(static_graph = False)
-    trainer = pl.Trainer(accelerator = accelerator,num_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes, num_dataloaders=num_dataloaders)
+    trainer = pl.Trainer(accelerator = accelerator,max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes)
     # TODO: Finish Dataloaders
     train_loader = make_dataloader(*params,train=True)
     validation_loader = make_dataloader(*params,train=False)
-    trainer.fit(XRAYModel(),train_loader,validation_loader)
-    th.save()
+    xray_model = XRAYModel(10)
+
+    optimizer = th.optim.Adam(xray_model.parameters(),lr=learning_rate)
+    trainer.fit(XrayModule(xray_model,optimizer),train_loader,validation_loader)
+    print("Training run complete")
+    th.save(trainer.model.state_dict(), path + "\\" + model_name + ".pth")
+    print("Model Saved, experiment complete.")
+
 
 #The Arguments of the Command Line are the following:
 # Path, Model_Name, Number of Nodes, Number of Dataloaders, Batch Size, Learning Rate, Number of Epochs
 
 if __name__ == "__main__":
     print("Running Experiment: ")
-    args = sys.argv[1]
-    path, model_name, num_nodes, num_dataloaders, batch_size, LR, NumEpochs = args[1:]
+    if len(sys.argv) <= 1:
+        path = os.getcwd() + "\\experiments\\MNIST_TEST"
+        model_name = "MNIST_MODEL"
+        num_nodes = 1
+        num_dataloaders = 1
+        batch_size = 32
+        lr = .001
+        NumEpochs = 10
+    else:
+        args = sys.argv[1]
+        path, model_name, num_nodes, num_dataloaders, batch_size, lr, NumEpochs = args[1:]
     print(f"Model Name: {model_name} \t num_nodes: {num_nodes} \t num_dataloaders: {num_dataloaders}"
-          f"\n batch_size: {batch_size} \t learning_rate: {LR} \t num_epochs: {NumEpochs}")
-    os.mkdir(path)
+          f"\n batch_size: {batch_size} \t learning_rate: {lr} \t num_epochs: {NumEpochs}")
+    try:
+        os.mkdir(path)
+    except FileExistsError:
+        if len(os.listdir(path)) == 0:
+            pass
+        else:
+            pass
+            # raise FileExistsError
     print(f"Experiment Info and Files stored in:{path}")
-    experiment(path,model_name,num_nodes,num_dataloaders,batch_size,LR,NumEpochs)
+    experiment(path,model_name,num_nodes,num_dataloaders,batch_size,lr,NumEpochs)
