@@ -28,7 +28,7 @@ class XrayModule(LightningModule):
         x ,y  = batch
         #Handle NAN Masking:
         y_hat = self(x)
-        loss = self.LossFun(y_hat,F.one_hot(y,num_classes = 10).to(th.float32))
+        loss = self.LossFun(y_hat,y)
         tensorboard_logs = {'train_loss':loss}
         return {'loss':loss,'log':tensorboard_logs}
 
