@@ -87,13 +87,13 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
 if __name__ == "__main__":
     print("Running Experiment: ")
     if len(sys.argv) <= 1:
-        path = os.path.join(os.getcwd(), 'experiments', 'test_1')
+        path = os.path.join(os.getcwd(), 'experiments', 'test_2')
         model_name = "MODEL_1"
         num_nodes = 1
         num_dataloaders = 1
         batch_size = 32
         lr = .001
-        NumEpochs = 2
+        NumEpochs = 100
     else:
         args = sys.argv[1]
         path, model_name, num_nodes, num_dataloaders, batch_size, lr, NumEpochs = args[1:]
