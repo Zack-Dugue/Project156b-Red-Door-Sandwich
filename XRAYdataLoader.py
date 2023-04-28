@@ -13,7 +13,7 @@ class XrayDataset(Dataset):
 
     def __init__(self, annotations_file, transform=None, target_transform=None):
         self.img_labels = pd.read_csv(annotations_file)
-        # self.img_dir = self.img_labels["Path"]
+        self.img_dir = self.img_labels["Path"]
         self.transform = transform
         self.target_transform = target_transform
 
@@ -23,8 +23,8 @@ class XrayDataset(Dataset):
     def __getitem__(self, idx):
         label = self.img_labels.iloc[idx].to_dict()
         # img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
-        # image = read_image(label["Path"])
-        image = None
+        image = read_image(os.path.join('data', label["Path"]))
+        # image = None
         pid = label["Path"].split("/")[1]
 
 
@@ -82,7 +82,7 @@ def validation_image_transform(*args):
 
 
 if __name__ == "__main__":
-    annotations_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
+    annotations_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
     data = XrayDataset(annotations_file=annotations_filepath)
     item = data.__getitem__(0)
     print(item)
