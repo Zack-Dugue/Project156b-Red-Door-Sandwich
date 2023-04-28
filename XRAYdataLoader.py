@@ -82,6 +82,7 @@ def validation_image_transform(*args):
 
 
 if __name__ == "__main__":
-    data = XrayDataset(annotations_file="SampleLabels.csv")
+    annotations_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
+    data = XrayDataset(annotations_file=annotations_filepath)
     item = data.__getitem__(0)
     print(item)
