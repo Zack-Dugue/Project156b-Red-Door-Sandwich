@@ -18,7 +18,7 @@ class XrayModule(LightningModule):
         super(XrayModule,self).__init__()
         self.model = model
         self.optimizer = optimizer
-        self.LossFun = nn.BCELoss()
+        self.LossFun = nn.BCELoss(reduce=False)
     def forward(self,x):
         return self.model(x)
 
@@ -29,8 +29,15 @@ class XrayModule(LightningModule):
         x ,y  = batch
         (img,nan_mask) = x
         y_hat = self(img)
-        loss = self.LossFun(y_hat*nan_mask,y)
-        tensorboard_logs = {'train_loss':loss}
+        # rn we still consider no finding. That should be removed from the training step at some point.
+        losses = self.LossFun(y_hat[:,1:]*nan_mask[:,1:],y[:,1:])
+        # pathologies
+        losses = th.mean(losses,dim=0)
+        loss = losses.mean()
+
+        tensorboard_logs = {'train_loss':loss, 'Enlarged Cardiomediastinum Loss' : losses[0],"Cardiomegaly" : losses[1],
+                            "Lung Opacity" :losses[2],"Pneumonia" : losses[3],"Pleural Effusion" : losses[4],
+                            "Pleural Other" : losses[5], "Fracture": losses[6], "Support Devices" : losses[7]}
         return {'loss':loss,'log':tensorboard_logs}
 
     def configure_optimizers(self):
