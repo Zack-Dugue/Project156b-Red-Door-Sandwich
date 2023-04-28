@@ -11,11 +11,11 @@ from torch.utils.data import Dataset, DataLoader
 #Use lightning datamap database manager.
 class XrayDataset(Dataset):
 
-    def __init__(self, annotations_file, transform=None, target_transform=None):
+    def __init__(self, annotations_file, transform=None, target_transform=None,train = True):
         self.img_labels = pd.read_csv(annotations_file)
-        # self.img_dir = self.img_labels["Path"]
         self.transform = transform
         self.target_transform = target_transform
+        self.train = train
 
     def __len__(self):
         return len(self.img_labels)
@@ -23,17 +23,21 @@ class XrayDataset(Dataset):
     def __getitem__(self, idx):
         label = self.img_labels.iloc[idx].to_dict()
         # img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
-        # image = read_image(label["Path"])
-        image = None
+        image = read_image("data/" + label["Path"])
+        image = image.to(th.float32)/255.0
         pid = label["Path"].split("/")[1]
 
 
         Y = (label["No Finding"], label['Enlarged Cardiomediastinum'], label["Cardiomegaly"], label['Lung Opacity'],
             label['Pneumonia'], label['Pleural Effusion'], label['Pleural Other'], label['Fracture'], label['Support Devices'])
         Y = th.tensor(Y, dtype=th.float32)
+        Y = th.where(Y == 0.0, .5 , Y)
+        Y = th.where(Y == 1.0, 1.0, Y)
+        Y = th.where(Y == -1.0, 0.0, Y)
         nans = th.isnan(Y)
         Y[nans] = 0
         nan_mask = th.logical_not(nans).to(th.float32)
+
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
@@ -41,16 +45,22 @@ class XrayDataset(Dataset):
         # Might have to reformat this:
         # IE Image,X might need to be ina  tuple or something
         # TODO: Include frontal vs Lateral or PA AP if in file name
-        return (image, nan_mask), Y
+        return (image.to(th.float32), nan_mask), Y
 
-def make_custom_dataloader(*args, train = True):
+def make_dataloader(annotations_file, batch_size, train = True):
     """
     Returns a dataloader for our dataset
     :param args: whatever args you think are appropriate
     :return:
     """
-    dataset = CustomImageDataset()
-    # return DataLoader(dataset, batch_size, shuffle=True )
+    if train == True:
+        transform = train_image_transform(crop_size=(224, 224), rot_deg_range=10, hflip_p=0.5)
+        shuffle = True
+    else:
+        transform = validation_image_transform((224,224))
+        shuffle = False
+    dataset = XrayDataset(annotations_file, transform=transform, target_transform=None, train = train)
+    return DataLoader(dataset, batch_size, shuffle=shuffle )
     
 def train_image_transform(crop_size, rot_deg_range, hflip_p):
     """
@@ -63,20 +73,21 @@ def train_image_transform(crop_size, rot_deg_range, hflip_p):
     """
     #TODO: To normalize the data,
     transform = tv.transforms.Compose([
-        tv.transforms.RandomResizedCrop(size=crop_size), 
+        tv.transforms.RandomResizedCrop(scale=(.8,1), interpolation= tv.transforms.InterpolationMode.BICUBIC , antialias=True, size=crop_size),
         tv.transforms.RandomRotation(degrees=rot_deg_range), 
         tv.transforms.RandomHorizontalFlip(p=hflip_p)
     ])
     return transform
 
-def validation_image_transform(*args):
+def validation_image_transform(size):
     """
     Returns a transform specifically for images during validation
     :param args: whatever args you think are appropriate
     :return:
     """
     transform = tv.transforms.Compose([
-        #TODO:
+        tv.transforms.Resize(size, interpolation= tv.transforms.InterpolationMode.BICUBIC),
+
     ])
     return transform
 

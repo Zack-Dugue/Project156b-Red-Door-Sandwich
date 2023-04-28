@@ -3,4 +3,8 @@ channels:
   - defaults
 dependencies:
   - pandas
+  - torch
+  - pytorch-lightning
+  - torchvision
+  - tensorboard
 # prefix: /Users/bshare/opt/anaconda3/envs/cs156b
