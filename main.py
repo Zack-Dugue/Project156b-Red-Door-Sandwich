@@ -59,13 +59,16 @@ class XrayModule(LightningModule):
     #     return {'val_loss': avg_loss, 'log': tensorboard_logs}
 def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_rate,num_epochs):
     print("Using", th.device)
-    if th.device != 'cuda':
-        accelerator = "cpu"
+    
+    # if th.device != 'cuda':
+    #     accelerator = "cpu"
+    accelerator = "auto"
+    devices = "auto"
     if num_nodes== 1:
         strategy = "auto"
     else:
         strategy = pl.DDPStrategy(static_graph = False)
-    trainer = pl.Trainer(accelerator = accelerator,max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes)
+    trainer = pl.Trainer(accelerator = accelerator, devices=devices, max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
     ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
     train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=True)
