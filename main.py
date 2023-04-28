@@ -5,11 +5,12 @@ import torchvision as tv
 import pytorch_lightning as pl
 from pytorch_lightning.core import LightningModule
 import tensorboard
-from XRAYdataLoader import make_data_loader
+from XRAYdataLoader import make_dataloader
 from model import XRAYModel
 import time
 import sys
 import os
+NUM_CLASSES = 9
 
 
 class XrayModule(LightningModule):
@@ -57,10 +58,12 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
     else:
         strategy = pl.DDPStrategy(static_graph = False)
     trainer = pl.Trainer(accelerator = accelerator,max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes)
-    # TODO: Finish Dataloaders
-    train_loader = make_dataloader(*params,train=True)
-    validation_loader = make_dataloader(*params,train=False)
-    xray_model = XRAYModel(10)
+    ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
+    train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=True)
+    ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
+    #For now training and validation are done on the same dataset
+    validation_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=False)
+    xray_model = XRAYModel(NUM_CLASSES)
 
     optimizer = th.optim.Adam(xray_model.parameters(),lr=learning_rate)
     trainer.fit(XrayModule(xray_model,optimizer),train_loader,validation_loader)
