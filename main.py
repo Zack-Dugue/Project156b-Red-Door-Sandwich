@@ -58,9 +58,11 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
     else:
         strategy = pl.DDPStrategy(static_graph = False)
     trainer = pl.Trainer(accelerator = accelerator,max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes)
-    ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
+    # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
+    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
     train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=True)
-    ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
+    # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
+    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
     #For now training and validation are done on the same dataset
     validation_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=False)
     xray_model = XRAYModel(NUM_CLASSES)
@@ -68,7 +70,7 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
     optimizer = th.optim.Adam(xray_model.parameters(),lr=learning_rate)
     trainer.fit(XrayModule(xray_model,optimizer),train_loader,validation_loader)
     print("Training run complete")
-    th.save(trainer.model.state_dict(), path + "\\" + model_name + ".pth")
+    th.save(trainer.model.state_dict(), os.path.join(path, model_name + ".pth"))
     print("Model Saved, experiment complete.")
 
 
@@ -78,13 +80,13 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
 if __name__ == "__main__":
     print("Running Experiment: ")
     if len(sys.argv) <= 1:
-        path = os.getcwd() + "\\experiments\\MNIST_TEST"
-        model_name = "MNIST_MODEL"
+        path = os.path.join(os.getcwd(), 'experiments', 'test_1')
+        model_name = "MODEL_1"
         num_nodes = 1
         num_dataloaders = 1
         batch_size = 32
         lr = .001
-        NumEpochs = 10
+        NumEpochs = 2
     else:
         args = sys.argv[1]
         path, model_name, num_nodes, num_dataloaders, batch_size, lr, NumEpochs = args[1:]
