@@ -58,6 +58,7 @@ class XrayModule(LightningModule):
     #     tensorboard_logs = {'val_loss': avg_loss}
     #     return {'val_loss': avg_loss, 'log': tensorboard_logs}
 def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_rate,num_epochs):
+    print("Using", th.device)
     if th.device != 'cuda':
         accelerator = "cpu"
     if num_nodes== 1:
