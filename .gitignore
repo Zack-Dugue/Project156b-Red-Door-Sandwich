@@ -1,2 +1,4 @@
 outputs/
 experiments/
+experiments/
+lightning_logs/
