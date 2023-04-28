@@ -26,9 +26,9 @@ class XrayModule(LightningModule):
 
     def training_step(self,batch,batch_idx):
         x ,y  = batch
-        #Handle NAN Masking:
-        y_hat = self(x)
-        loss = self.LossFun(y_hat,y)
+        (img,nan_mask) = x
+        y_hat = self(img)
+        loss = self.LossFun(y_hat*nan_mask,y)
         tensorboard_logs = {'train_loss':loss}
         return {'loss':loss,'log':tensorboard_logs}
 
@@ -38,9 +38,10 @@ class XrayModule(LightningModule):
         return self.optimizer
     def validation_step(self,batch,batch_idx):
         x, y = batch
-        y_hat = self(x)
-        self.model.train(False)
-        loss = self.LossFun(y_hat, y)
+        (img, nan_mask) = x
+        self.train(False)
+        y_hat = self(img)
+        loss = self.LossFun(y_hat * nan_mask, y)
         tensorboard_logs = {'validation_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
 

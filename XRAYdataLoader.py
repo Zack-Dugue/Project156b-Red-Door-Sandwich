@@ -22,9 +22,8 @@ class XrayDataset(Dataset):
 
     def __getitem__(self, idx):
         label = self.img_labels.iloc[idx].to_dict()
-        # img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
-        image = read_image(os.path.join('data', label["Path"]))
-        # image = None
+        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        image = read_image(label["Path"])
         pid = label["Path"].split("/")[1]
 
 
@@ -43,14 +42,20 @@ class XrayDataset(Dataset):
         # TODO: Include frontal vs Lateral or PA AP if in file name
         return (image, nan_mask), Y
 
-def make_custom_dataloader(*args, train = True):
+def make_custom_dataloader(annotations_file, batch_size, train = True):
     """
     Returns a dataloader for our dataset
     :param args: whatever args you think are appropriate
     :return:
     """
-    dataset = CustomImageDataset()
-    # return DataLoader(dataset, batch_size, shuffle=True )
+    if train == True:
+        transform = train_image_transform(crop_size=(224, 224), rot_deg_range=10, hflip_p=0.5)
+        shuffle = True
+    else:
+        transform = None
+        shuffle = False
+    dataset = XrayDataset(annotations_file, transform=transform, target_transform=None)
+    return DataLoader(dataset, batch_size, shuffle=shuffle )
     
 def train_image_transform(crop_size, rot_deg_range, hflip_p):
     """
@@ -75,14 +80,12 @@ def validation_image_transform(*args):
     :param args: whatever args you think are appropriate
     :return:
     """
-    transform = tv.transforms.Compose([
-        #TODO:
-    ])
+    # transform = tv.transforms.Compose([])
+    transform = nn.Identity()
     return transform
 
 
 if __name__ == "__main__":
-    annotations_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
-    data = XrayDataset(annotations_file=annotations_filepath)
+    data = XrayDataset(annotations_file="SampleLabels.csv")
     item = data.__getitem__(0)
     print(item)
