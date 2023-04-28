@@ -70,10 +70,10 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
         strategy = pl.DDPStrategy(static_graph = False)
     trainer = pl.Trainer(accelerator = accelerator, devices=devices, max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
-    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
+    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train.csv')
     train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=True)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
-    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
+    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train.csv')
     #For now training and validation are done on the same dataset
     validation_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=False)
     xray_model = XRAYModel(NUM_CLASSES)
