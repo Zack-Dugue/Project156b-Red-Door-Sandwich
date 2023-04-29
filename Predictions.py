@@ -170,7 +170,7 @@ class Predictions:
         if self.mode == 'prob':
             df = self.predictions.transform(lambda x: int(math.floor(x*2-1 + random.random())))
         # calculate no findings
-        df[0] = df.apply(lambda x: -1 if 1 in x[1:].unique() == 0 else 1, axis=1)
+        df[0] = df.apply(lambda x: -1 if 1 in x[1:].unique() else 1, axis=1)
         self.prediction_df = df
 
     def apply_bulk_predict(self):
