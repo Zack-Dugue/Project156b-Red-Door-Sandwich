@@ -53,7 +53,12 @@ class XrayModule(LightningModule):
         loss = self.LossFun(y_hat * nan_mask, y)
         tensorboard_logs = {'validation_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
-
+    
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        x, y = batch
+        img, nan_mask = x
+        return self(img)
+    
     # def on_validation_epoch_end(self,outputs):
     #     avg_loss = th.stack([x['loss'] for x in outputs]).mean()
     #     tensorboard_logs = {'val_loss': avg_loss}

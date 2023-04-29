@@ -27,16 +27,20 @@ class XrayDataset(Dataset):
         image = image.to(th.float32)/255.0
         pid = label["Path"].split("/")[1]
 
-
-        Y = (label["No Finding"], label['Enlarged Cardiomediastinum'], label["Cardiomegaly"], label['Lung Opacity'],
-            label['Pneumonia'], label['Pleural Effusion'], label['Pleural Other'], label['Fracture'], label['Support Devices'])
-        Y = th.tensor(Y, dtype=th.float32)
-        Y = th.where(Y == 0.0, .5 , Y)
-        Y = th.where(Y == 1.0, 1.0, Y)
-        Y = th.where(Y == -1.0, 0.0, Y)
+        if self.train:
+            Y = (label["No Finding"], label['Enlarged Cardiomediastinum'], label["Cardiomegaly"], label['Lung Opacity'],
+                label['Pneumonia'], label['Pleural Effusion'], label['Pleural Other'], label['Fracture'], label['Support Devices'])
+            Y = th.tensor(Y, dtype=th.float32)
+            Y = th.where(Y == 0.0, .5 , Y)
+            Y = th.where(Y == 1.0, 1.0, Y)
+            Y = th.where(Y == -1.0, 0.0, Y)
+        else:
+            Y = th.tensor([0 for _ in range(9)])
         nans = th.isnan(Y)
         Y[nans] = 0
         nan_mask = th.logical_not(nans).to(th.float32)
+        
+
 
         if self.transform:
             image = self.transform(image)

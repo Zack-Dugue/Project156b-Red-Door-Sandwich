@@ -8,6 +8,8 @@ from main import XrayModule
 from torchvision.io import read_image
 import argparse
 import torch as th
+import pytorch_lightning as pl
+from XRAYdataLoader import make_dataloader
 
 
 NUM_CLASSES = 9 #this must be the same as in the main script
@@ -26,6 +28,11 @@ class Predictions:
         self.ingest_test_csv()
         self.ingest_train_csv()
         self.load_model()
+
+    def generate_bulk_predictions(self):
+        self.bulk_predict()
+        self.calculate_no_findings()
+        self.apply_bulk_predict()
 
 
     def ingest_test_csv(self):
@@ -150,6 +157,28 @@ class Predictions:
         filepath = os.path.join(self.output_folder, time_string + '.csv')
         output_df.to_csv(filepath, sep=',', header=True, index=False)
 
+    def bulk_predict(self):
+        trainer = pl.Trainer()
+        data_loader = make_dataloader(self.test_ids_filepath, batch_size=32, train=False)
+        self.predictions = trainer.predict(self.model, data_loader)
+        self.predictions = pd.DataFrame(th.cat(self.predictions).numpy())
+        
+    def calculate_no_findings(self):
+        # round values correctly
+        if self.mode == 'round':
+            df = self.predictions.transform(lambda x: round(2*x-1))
+        if self.mode == 'prob':
+            df = self.predictions.transform(lambda x: int(math.floor(x*2-1 + random.random())))
+        # calculate no findings
+        df[0] = df.apply(lambda x: -1 if 1 in x[1:].unique() == 0 else 1, axis=1)
+        self.prediction_df = df
+
+    def apply_bulk_predict(self):
+        output_df = pd.concat((self.test_ids, self.prediction_df), axis=1).astype(int)
+        # rename columns
+        column_names = ['Id'] + self.labels.to_list()
+        output_df = output_df.rename(columns=dict(zip(output_df.columns, column_names)))
+        self.save_output(output_df)
 
 
 if __name__ == "__main__":
@@ -157,11 +186,12 @@ if __name__ == "__main__":
         prog="Predict",
         description='Produce a CSV of predictions for upload to eval.ai',
     )
-    parser.add_argument('-p', '--path', help='Path to stored model (.pth)')
+    parser.add_argument('-p', '--path', required=True, help='Path to stored model (.pth)')
     parser.add_argument('-m', '--mode', choices=['round', 'prob'], required=False, default='round', help='How to select if passed value is between integers')
     
     args = parser.parse_args()
     path = args.path
-    mode = args.mode    
+    mode = args.mode
     prediction = Predictions(path, mode)
-    prediction.generate_predictions()
+
+    prediction.generate_bulk_predictions()
