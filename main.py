@@ -27,6 +27,7 @@ class XrayModule(LightningModule):
 
     def training_step(self,batch,batch_idx):
         x ,y  = batch
+        y = y.to(th.float)
         (img,nan_mask) = x
         y_hat = self(img)
         # rn we still consider no finding. That should be removed from the training step at some point.
@@ -46,11 +47,11 @@ class XrayModule(LightningModule):
             self.optimizer = th.optim.Adam(self.model.parameters(),lr=0.001)
         return self.optimizer
     def validation_step(self,batch,batch_idx):
-        x, y = batch
+        x, y= batch
         (img, nan_mask) = x
         self.train(False)
         y_hat = self(img)
-        loss = self.LossFun(y_hat * nan_mask, y)
+        loss = self.LossFun(y_hat * nan_mask, y.to(th.float) )
         tensorboard_logs = {'validation_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
     

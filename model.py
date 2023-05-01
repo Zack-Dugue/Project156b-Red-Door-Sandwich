@@ -37,10 +37,10 @@ class XRAYModel(nn.Module):
         super().__init__()
         # self.base_model = tv.models.convnext_base().features
         # self.base_model = th.load("dino_vitbase8_pretrain.pth")
-        # self.base_model = tv.models.convnext_tiny().
-        self.base_model = TestModel()
+        self.base_model = tv.models.convnext_tiny().features
+        # self.base_model = TestModel()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = nn.Linear(192, 2048)
+        self.fc1 = nn.Linear(768, 2048)
         self.act1 = nn.GELU()
         self.drop1 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(2048,2048)
@@ -53,6 +53,8 @@ class XRAYModel(nn.Module):
 
     def parameters(self,freeze_features=True):
         if freeze_features:
+            for param in self.base_model.parameters():
+                param.requires_grad = False
             return list(self.fc1.parameters()) + list(self.fc2.parameters()) + list(self.fc3.parameters()) + list(self.drop1.parameters()) + list(self.drop2.parameters())
         else:
             return list(self.base_model.parameters()) + list(self.fc1.parameters()) + list(self.fc2.parameters()) + list(self.fc3.parameters()) + list(self.drop1.parameters()) + list(self.drop2.parameters())
