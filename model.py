@@ -40,7 +40,7 @@ class XRAYModel(nn.Module):
         # self.base_model = tv.models.convnext_tiny().
         self.base_model = TestModel()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = nn.LazyLinear(2048)
+        self.fc1 = nn.Linear(192, 2048)
         self.act1 = nn.GELU()
         self.drop1 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(2048,2048)
