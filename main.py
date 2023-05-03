@@ -27,6 +27,7 @@ class XrayModule(LightningModule):
 
     def training_step(self,batch,batch_idx):
         x ,y  = batch
+        y = y.to(th.float)
         (img,nan_mask) = x
         y_hat = self(img)
         # rn we still consider no finding. That should be removed from the training step at some point.
@@ -34,6 +35,7 @@ class XrayModule(LightningModule):
         # pathologies
         losses = th.mean(losses,dim=0)
         loss = losses.mean()
+        losses = losses.detach().numpy() # remove gradients and return to numpy array
 
         tensorboard_logs = {'train_loss':loss, 'Enlarged Cardiomediastinum Loss' : losses[0],"Cardiomegaly" : losses[1],
                             "Lung Opacity" :losses[2],"Pneumonia" : losses[3],"Pleural Effusion" : losses[4],
@@ -45,14 +47,19 @@ class XrayModule(LightningModule):
             self.optimizer = th.optim.Adam(self.model.parameters(),lr=0.001)
         return self.optimizer
     def validation_step(self,batch,batch_idx):
-        x, y = batch
+        x, y= batch
         (img, nan_mask) = x
         self.train(False)
         y_hat = self(img)
-        loss = self.LossFun(y_hat * nan_mask, y)
+        loss = self.LossFun(y_hat * nan_mask, y.to(th.float) )
         tensorboard_logs = {'validation_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
-
+    
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        x, y = batch
+        img, nan_mask = x
+        return self(img)
+    
     # def on_validation_epoch_end(self,outputs):
     #     avg_loss = th.stack([x['loss'] for x in outputs]).mean()
     #     tensorboard_logs = {'val_loss': avg_loss}
@@ -68,12 +75,12 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
         strategy = "auto"
     else:
         strategy = pl.DDPStrategy(static_graph = False)
-    trainer = pl.Trainer(accelerator = accelerator, devices=devices, max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes)
+    trainer = pl.Trainer(accelerator = accelerator, devices=devices, max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes, log_every_n_steps=1)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
-    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train.csv')
+    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
     train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=True)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
-    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train.csv')
+    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
     #For now training and validation are done on the same dataset
     validation_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=False)
     xray_model = XRAYModel(NUM_CLASSES)
@@ -97,7 +104,7 @@ if __name__ == "__main__":
         num_dataloaders = 1
         batch_size = 32
         lr = .001
-        NumEpochs = 100
+        NumEpochs = 20
     else:
         args = sys.argv[1]
         path, model_name, num_nodes, num_dataloaders, batch_size, lr, NumEpochs = args[1:]
