@@ -90,7 +90,7 @@ def validation_image_transform(size):
     :return:
     """
     transform = tv.transforms.Compose([
-        tv.transforms.Resize(size, interpolation= tv.transforms.InterpolationMode.BICUBIC),
+        tv.transforms.Resize(size, interpolation= tv.transforms.InterpolationMode.BICUBIC, antialias=True),
 
     ])
     return transform
