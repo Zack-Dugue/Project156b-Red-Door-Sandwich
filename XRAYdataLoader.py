@@ -66,7 +66,7 @@ def make_dataloader(annotations_file, batch_size, train = True, num_workers = 0)
         transform = validation_image_transform((224,224))
         shuffle = False
     dataset = XrayDataset(annotations_file, transform=transform, target_transform=None, train = train)
-    return DataLoader(dataset, batch_size, shuffle=shuffle, num_workers=os.cpu_count(),prefetch_factor=3)
+    return DataLoader(dataset, batch_size, shuffle=shuffle, num_workers=num_workers,prefetch_factor=3)
     
 def train_image_transform(crop_size, rot_deg_range, hflip_p):
     """
