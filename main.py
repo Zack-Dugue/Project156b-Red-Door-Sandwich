@@ -36,7 +36,7 @@ class XrayModule(LightningModule):
         # pathologies
         losses = th.mean(losses,dim=0)
         loss = losses.mean()
-        losses = losses.detach().numpy() # remove gradients and return to numpy array
+        losses = losses
 
         tensorboard_logs = {'train_loss':loss, 'Enlarged Cardiomediastinum Loss' : losses[0],"Cardiomegaly" : losses[1],
                             "Lung Opacity" :losses[2],"Pneumonia" : losses[3],"Pleural Effusion" : losses[4],
