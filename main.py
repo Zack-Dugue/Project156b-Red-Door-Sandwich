@@ -64,25 +64,29 @@ class XrayModule(LightningModule):
     #     avg_loss = th.stack([x['loss'] for x in outputs]).mean()
     #     tensorboard_logs = {'val_loss': avg_loss}
     #     return {'val_loss': avg_loss, 'log': tensorboard_logs}
-def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_rate,num_epochs):
+def experiment(path,model_name,num_nodes, num_gpus,num_dataloader_workers,batch_size,learning_rate,num_epochs):
     print("Using", th.device)
     
     # if th.device != 'cuda':
     #     accelerator = "cpu"
     accelerator = "auto"
+    if num_gpus > 0 and num_gpus != th.cuda.device_count():
+            print(f"ERROR: The number of GPUs in the command line is {num_gpus}, but only {th.cuda.device_count()} GPUs are available")
+            raise ValueError
     devices = "auto"
-    if num_nodes== 1:
+
+    if num_gpus <= 1:
         strategy = "auto"
     else:
-        strategy = pl.DDPStrategy(static_graph = False)
+        strategy = pl.DDPStrategy(static_graph = True)
     trainer = pl.Trainer(accelerator = accelerator, devices=devices, max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes, log_every_n_steps=1)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
     ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
-    train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=True)
+    train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size, train=True, num_workers=num_dataloader_workers)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
     ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
     #For now training and validation are done on the same dataset
-    validation_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=False)
+    validation_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=False,num_workers=num_dataloader_workers)
     xray_model = XRAYModel(NUM_CLASSES)
 
     optimizer = th.optim.Adam(xray_model.parameters(),lr=learning_rate)
@@ -101,14 +105,15 @@ if __name__ == "__main__":
         path = os.path.join(os.getcwd(), 'experiments', 'test_2')
         model_name = "MODEL_1"
         num_nodes = 1
+        num_gpus = 1
         num_dataloaders = 1
-        batch_size = 32
+        batch_size = 2
         lr = .001
         NumEpochs = 20
     else:
         args = sys.argv[1]
-        path, model_name, num_nodes, num_dataloaders, batch_size, lr, NumEpochs = args[1:]
-    print(f"Model Name: {model_name} \t num_nodes: {num_nodes} \t num_dataloaders: {num_dataloaders}"
+        path, model_name, num_nodes, num_gpus, num_dataloaders, batch_size, lr, NumEpochs = args[1:]
+    print(f"Model Name: {model_name} \t num_nodes: {num_nodes} \t num_gpus: {num_gpus} \t num_dataloader_workers: {num_dataloaders}"
           f"\n batch_size: {batch_size} \t learning_rate: {lr} \t num_epochs: {NumEpochs}")
     try:
         os.mkdir(path)
@@ -119,4 +124,4 @@ if __name__ == "__main__":
             pass
             # raise FileExistsError
     print(f"Experiment Info and Files stored in:{path}")
-    experiment(path,model_name,num_nodes,num_dataloaders,batch_size,lr,NumEpochs)
+    experiment(path,model_name, num_nodes, num_gpus,num_dataloaders,batch_size,lr,NumEpochs)

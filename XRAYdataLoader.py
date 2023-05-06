@@ -21,6 +21,8 @@ class XrayDataset(Dataset):
         return len(self.img_labels)
 
     def __getitem__(self, idx):
+
+
         label = self.img_labels.iloc[idx].to_dict()
         # img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
         image = read_image("data/" + label["Path"])
@@ -51,7 +53,7 @@ class XrayDataset(Dataset):
         # TODO: Include frontal vs Lateral or PA AP if in file name
         return (image.to(th.float32), nan_mask), Y
 
-def make_dataloader(annotations_file, batch_size, train = True):
+def make_dataloader(annotations_file, batch_size, train = True, num_workers = 0):
     """
     Returns a dataloader for our dataset
     :param args: whatever args you think are appropriate
@@ -64,7 +66,7 @@ def make_dataloader(annotations_file, batch_size, train = True):
         transform = validation_image_transform((224,224))
         shuffle = False
     dataset = XrayDataset(annotations_file, transform=transform, target_transform=None, train = train)
-    return DataLoader(dataset, batch_size, shuffle=shuffle, num_workers=os.cpu_count())
+    return DataLoader(dataset, batch_size, shuffle=shuffle, num_workers=os.cpu_count(),prefetch_factor=3)
     
 def train_image_transform(crop_size, rot_deg_range, hflip_p):
     """
@@ -78,7 +80,7 @@ def train_image_transform(crop_size, rot_deg_range, hflip_p):
     #TODO: To normalize the data,
     transform = tv.transforms.Compose([
         tv.transforms.RandomResizedCrop(scale=(.8,1), interpolation= tv.transforms.InterpolationMode.BICUBIC , antialias=True, size=crop_size),
-        tv.transforms.RandomRotation(degrees=rot_deg_range), 
+        tv.transforms.RandomRotation(degrees=rot_deg_range),
         tv.transforms.RandomHorizontalFlip(p=hflip_p)
     ])
     return transform
