@@ -10,6 +10,7 @@ from model import XRAYModel
 import time
 import sys
 import os
+import argparse
 NUM_CLASSES = 9
 
 
@@ -35,7 +36,7 @@ class XrayModule(LightningModule):
         # pathologies
         losses = th.mean(losses,dim=0)
         loss = losses.mean()
-        losses = losses # remove gradients and return to numpy array
+        losses = losses
 
         tensorboard_logs = {'train_loss':loss, 'Enlarged Cardiomediastinum Loss' : losses[0],"Cardiomegaly" : losses[1],
                             "Lung Opacity" :losses[2],"Pneumonia" : losses[3],"Pleural Effusion" : losses[4],
@@ -77,12 +78,12 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
         strategy = pl.DDPStrategy(static_graph = False)
     trainer = pl.Trainer(accelerator = accelerator, devices=devices, max_epochs = num_epochs, strategy=strategy, num_nodes=num_nodes, log_every_n_steps=1)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
-    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
-    train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=True)
+    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
+    train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size, num_dataloaders=num_dataloaders, train=True)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
-    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
+    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
     #For now training and validation are done on the same dataset
-    validation_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size,train=False)
+    validation_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size, num_dataloaders=num_dataloaders, train=False)
     xray_model = XRAYModel(NUM_CLASSES)
 
     optimizer = th.optim.Adam(xray_model.parameters(),lr=learning_rate)
@@ -96,18 +97,27 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
 # Path, Model_Name, Number of Nodes, Number of Dataloaders, Batch Size, Learning Rate, Number of Epochs
 
 if __name__ == "__main__":
+    
     print("Running Experiment: ")
-    if len(sys.argv) <= 1:
-        path = os.path.join(os.getcwd(), 'experiments', 'test_2')
-        model_name = "MODEL_1"
-        num_nodes = 1
-        num_dataloaders = 1
-        batch_size = 32
-        lr = .001
-        NumEpochs = 20
-    else:
-        args = sys.argv[1]
-        path, model_name, num_nodes, num_dataloaders, batch_size, lr, NumEpochs = args[1:]
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-p', '--path', help='Name of experiment folder', default='test_1', type=str)
+    parser.add_argument('-N', '--name', help='Name of the model', default='MODEL_1', type=str)
+    parser.add_argument('-n', '--num_nodes', help='Number of nodes being run on', default=1, type=int)
+    parser.add_argument('-d', '--num_dataloaders', help='Number of dataloader workers', default=1, type=int)
+    parser.add_argument('-b', '--batch_size', help='Batch size', default=512, type=int)
+    parser.add_argument('-l', '--learning_rate', help='Learning rate of model', default=.001, type=float)
+    parser.add_argument('-e', '--num_epochs', help='Number of epochs', default=20, type=int)
+    args = parser.parse_args()
+
+    path = os.path.join(os.getcwd(), 'experiments', args.path)
+    model_name = args.name
+    num_nodes = args.num_nodes
+    num_dataloaders = args.num_dataloaders
+    batch_size = args.batch_size
+    lr = args.learning_rate
+    NumEpochs = args.num_epochs
+
     print(f"Model Name: {model_name} \t num_nodes: {num_nodes} \t num_dataloaders: {num_dataloaders}"
           f"\n batch_size: {batch_size} \t learning_rate: {lr} \t num_epochs: {NumEpochs}")
     try:
