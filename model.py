@@ -35,12 +35,16 @@ class TestModel(nn.Module):
 class XRAYModel(nn.Module):
     def __init__(self,num_classes):
         super().__init__()
+        print("Initializing XRAY Model")
         # self.base_model = tv.models.convnext_base().features
         # self.base_model = th.load("dino_vitbase8_pretrain.pth")
-        self.base_model = tv.models.convnext_tiny().features
+        self.base_model = th.hub.load('facebookresearch/dino:main', 'dino_vits8')
+        print("Base Model Loaded")
         # self.base_model = TestModel()
+        self.vit = True
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = nn.Linear(768, 2048)
+        # self.fc1 = nn.Linear(768, 2048)
+        self.fc2 = nn.Linear(384,2048)
         self.act1 = nn.GELU()
         self.drop1 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(2048,2048)
@@ -61,8 +65,9 @@ class XRAYModel(nn.Module):
     def forward(self,x : th.Tensor):
         x = x.repeat([1,3,1,1])
         x = self.base_model(x)
-        x = self.avg_pool(x)
-        x = x.view(x.size(0),-1)
+        if not self.vit:
+            x = self.avg_pool(x)
+            x = x.view(x.size(0),-1)
         x = self.fc1(x)
         x = self.act1(x)
         x = self.drop1(x)
