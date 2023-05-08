@@ -87,6 +87,12 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
     xray_model = XRAYModel(NUM_CLASSES)
 
     optimizer = th.optim.Adam(xray_model.parameters(),lr=learning_rate)
+    print("Trainer system parameters:")
+    print(f"\t trainer.world_size : {trainer.world_size}")
+    print(f"\t trainer.num_nodes : {trainer.num_nodes}")
+    print(f"\t trainer.accelerator : {trainer.accelerator}")
+    print(f"\t trainer.device_ids {trainer.device_ids}")
+    print(f"\t train_loader.num_workers : {train_loader.num_workers}")
     trainer.fit(XrayModule(xray_model,optimizer),train_loader,validation_loader)
     print("Training run complete")
     th.save(trainer.model.state_dict(), os.path.join(path, model_name + ".pth"))
