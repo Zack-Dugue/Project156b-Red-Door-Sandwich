@@ -44,7 +44,7 @@ class XRAYModel(nn.Module):
         self.vit = True
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         # self.fc1 = nn.Linear(768, 2048)
-        self.fc2 = nn.Linear(384,2048)
+        self.fc1 = nn.Linear(384,2048)
         self.act1 = nn.GELU()
         self.drop1 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(2048,2048)
