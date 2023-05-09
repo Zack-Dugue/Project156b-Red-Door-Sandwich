@@ -12,6 +12,7 @@ from torch.utils.data import Dataset, DataLoader
 class XrayDataset(Dataset):
 
     def __init__(self, annotations_file, transform=None, target_transform=None,train = True, chexpert = False, brax = False, mimic = False):
+        #can we get rid of annotations_file and use boolean parameters and predifined csv filepaths instead?
         assert(chexpert or brax or mimic) #cant run the model without data
         label_list = []
         chexpertcsv = None #placeholders for respective csv filepaths
