@@ -79,8 +79,8 @@ def train_image_transform(crop_size, rot_deg_range, hflip_p):
     """
     #TODO: To normalize the data,
     transform = tv.transforms.Compose([
-        tv.transforms.RandomResizedCrop(scale=(.8,1), interpolation= tv.transforms.InterpolationMode.BICUBIC , antialias=True, size=crop_size),
-        tv.transforms.RandomRotation(degrees=rot_deg_range, interpolation=tv.transforms.InterpolationMode.BICUBIC),
+        tv.transforms.RandomResizedCrop(scale=(.8,1), interpolation= tv.transforms.InterpolationMode.BILINEAR , antialias=True, size=crop_size),
+        tv.transforms.RandomRotation(degrees=rot_deg_range, interpolation=tv.transforms.InterpolationMode.BILINEAR),
         tv.transforms.RandomHorizontalFlip(p=hflip_p)
     ])
     return transform
@@ -92,7 +92,7 @@ def validation_image_transform(size):
     :return:
     """
     transform = tv.transforms.Compose([
-        tv.transforms.Resize(size, interpolation= tv.transforms.InterpolationMode.BICUBIC, antialias=True),
+        tv.transforms.Resize(size, interpolation= tv.transforms.InterpolationMode.BILINEAR, antialias=True),
 
     ])
     return transform
