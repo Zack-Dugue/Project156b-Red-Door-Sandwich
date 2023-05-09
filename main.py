@@ -14,6 +14,7 @@ import argparse
 NUM_CLASSES = 9
 
 
+
 class XrayModule(LightningModule):
     def __init__(self,model,optimizer=None):
         super(XrayModule,self).__init__()

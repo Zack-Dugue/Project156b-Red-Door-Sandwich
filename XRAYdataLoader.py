@@ -80,7 +80,7 @@ def train_image_transform(crop_size, rot_deg_range, hflip_p):
     #TODO: To normalize the data,
     transform = tv.transforms.Compose([
         tv.transforms.RandomResizedCrop(scale=(.8,1), interpolation= tv.transforms.InterpolationMode.BICUBIC , antialias=True, size=crop_size),
-        tv.transforms.RandomRotation(degrees=rot_deg_range), 
+        tv.transforms.RandomRotation(degrees=rot_deg_range, interpolation=tv.transforms.InterpolationMode.BICUBIC),
         tv.transforms.RandomHorizontalFlip(p=hflip_p)
     ])
     return transform
