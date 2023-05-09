@@ -15,7 +15,7 @@ class XrayDataset(Dataset):
         #can we get rid of annotations_file and use boolean parameters and predifined csv filepaths instead?
         assert(chexpert or brax or mimic) #cant run the model without data
         label_list = []
-        chexpertcsv = None #placeholders for respective csv filepaths
+        chexpertcsv = annotations_file #placeholders for respective csv filepaths
         braxcsv = None
         mimiccsv = None
         if chexpert:
@@ -80,7 +80,7 @@ def make_dataloader(annotations_file, batch_size, num_dataloaders, train = True)
     else:
         transform = validation_image_transform((224,224))
         shuffle = False
-    dataset = XrayDataset(annotations_file, transform=transform, target_transform=None, train = train)
+    dataset = XrayDataset(annotations_file, transform=transform, target_transform=None, train = train, chexpert=True)
     return DataLoader(dataset, batch_size, shuffle=shuffle, num_workers=num_dataloaders)
     
 def train_image_transform(crop_size, rot_deg_range, hflip_p):
