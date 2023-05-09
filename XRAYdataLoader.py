@@ -11,8 +11,22 @@ from torch.utils.data import Dataset, DataLoader
 #Use lightning datamap database manager.
 class XrayDataset(Dataset):
 
-    def __init__(self, annotations_file, transform=None, target_transform=None,train = True):
-        self.img_labels = pd.read_csv(annotations_file)
+    def __init__(self, annotations_file, transform=None, target_transform=None,train = True, chexpert = False, brax = False, mimic = False):
+        assert(chexpert or brax or mimic) #cant run the model without data
+        label_list = []
+        chexpertcsv = None #placeholders for respective csv filepaths
+        braxcsv = None
+        mimiccsv = None
+        if chexpert:
+            chex = pd.read_csv(chexpertcsv)
+            label_list.append(chex)
+        if brax:
+            bra = pd.read_csv(braxcsv)
+            label_list.append(bra)
+        if mimic:
+            mim = pd.read_csv(mimiccsv)
+            label_list.append(mimiccsv)
+        self.img_labels = pd.concat(label_list)
         self.transform = transform
         self.target_transform = target_transform
         self.train = train
