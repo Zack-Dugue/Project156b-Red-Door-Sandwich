@@ -156,6 +156,9 @@ class Predictions:
         time_string = time.strftime("%Y%m%d-%H%M%S")
         filepath = os.path.join(self.output_folder, time_string + '.csv')
         output_df.to_csv(filepath, sep=',', header=True, index=False)
+        print('Finished outputting to:')
+        print(os.path.abspath(filepath))
+
 
     def bulk_predict(self):
         trainer = pl.Trainer()
