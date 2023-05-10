@@ -63,7 +63,7 @@ class XRAYModel(nn.Module):
         self.act2 = nn.GLU()
         self.drop2 = nn.Dropout(0.5)
         self.fc3 = nn.Linear(1500,num_classes)
-        self.act3 = MSE_Class_Act()
+        self.act3 = MSE_Class_Act(num_classes)
         self.eval = False
         print("Finished Initializing xRay Model")
 
