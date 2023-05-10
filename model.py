@@ -4,7 +4,19 @@ import torch.nn.functional as F
 import torchvision as tv
 import pytorch_lightning as pl
 from pytorch_lightning.core import LightningModule
-
+class MSE_Class_Act(nn.Module):
+    def __init__(self,num_classes):
+        """
+        The goal here is to create an activation that squashes the output values between 0 and 1, but
+        is compatible with the MSE objective. I think this does that better than sigmoid.
+        Cause it has a low derivative when the output is near 1, when its near -1, and when its near 0.
+        :param num_classes:
+        """
+        # self.a = nn.Parameter(th.ones_like(num_classes,requires_grad=True))
+    def forward(self,x):
+        ones =  th.ones_like(x)
+        # a = th.repeat(self.a,[x.size(0),1])
+        return ((ones / (ones + (ones/ x)**2))*th.sign(x) + ones)/2
 class TestModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -51,7 +63,7 @@ class XRAYModel(nn.Module):
         self.act2 = nn.GLU()
         self.drop2 = nn.Dropout(0.5)
         self.fc3 = nn.Linear(1500,num_classes)
-        self.act3 = nn.Sigmoid()
+        self.act3 = MSE_Class_Act()
         self.eval = False
         print("Finished Initializing xRay Model")
 
