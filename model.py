@@ -45,12 +45,12 @@ class XRAYModel(nn.Module):
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         # self.fc1 = nn.Linear(768, 2048)
         self.fc1 = nn.Linear(384,2048)
-        self.act1 = nn.GELU()
+        self.act1 = nn.GLU()
         self.drop1 = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(2048,2048)
-        self.act2 = nn.GELU()
+        self.fc2 = nn.Linear(1024,2048)
+        self.act2 = nn.GLU()
         self.drop2 = nn.Dropout(0.5)
-        self.fc3 = nn.Linear(2048,num_classes)
+        self.fc3 = nn.Linear(1024,num_classes)
         self.act3 = nn.Sigmoid()
         self.eval = False
         print("Finished Initializing xRay Model")
@@ -68,12 +68,13 @@ class XRAYModel(nn.Module):
         if not self.vit:
             x = self.avg_pool(x)
             x = x.view(x.size(0),-1)
+
         x = self.fc1(x)
         x = self.act1(x)
-        x = self.drop1(x)
+        # x = self.drop1(x)
         x = self.fc2(x)
         x = self.act2(x)
-        x = self.drop2(x)
+        # x = self.drop2(x)
         x = self.fc3(x)
         x = self.act3(x)
         # TODO handle the whole "no finding" thing.
