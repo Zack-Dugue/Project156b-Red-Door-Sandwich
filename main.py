@@ -26,10 +26,10 @@ class Criterion(nn.Module):
         self.stdev.to(device)
         self.non_nan_frac.to(device)
     def forward(self,y_hat,y):
-        loss = self.LossFun(y_hat,y)
-        loss = th.mean(loss,dim=0)
-        loss = loss/self.weighting
-        return  th.mean(loss)
+        unscaled_loss = self.LossFun(y_hat,y)
+        unscaled_loss = th.mean(unscaled_loss,dim=0)
+        loss = unscaled_loss/self.weighting
+        return loss
 
 class XrayModule(LightningModule):
     def __init__(self,model,optimizer=None):
@@ -48,10 +48,8 @@ class XrayModule(LightningModule):
         y = y.to(th.float)
         (img,nan_mask) = x
         y_hat = self(img)
-        # rn we still consider no finding. That should be removed from the training step at some point.
         losses = self.LossFun(y_hat*nan_mask,y)
         # pathologies
-        losses = th.mean(losses,dim=0)
         loss = losses.mean()
         losses = losses
 
