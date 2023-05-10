@@ -17,14 +17,12 @@ NUM_CLASSES = 9
 # Variance / Variance = 1
 # MSE / Variance
 class Criterion(nn.Module):
-    def __init__(self,device):
+    def __init__(self):
         super().__init__()
         self.LossFun = nn.MSELoss(reduction = 'None')
-        var = th.Tensor(0.637237519,0.765471336,0.869690439,0.494558767,0.46360988,0.86843845,0.541910475,0.863346014,0.435933443)**2
-        non_nan_frac = th.Tensor(0.999955096,0.217191675,0.229618986,0.531915849,0.122942814,0.598969443,0.030518198,0.059767844,0.564112351)
+        var = th.Tensor([0.637237519,0.765471336,0.869690439,0.494558767,0.46360988,0.86843845,0.541910475,0.863346014,0.435933443])**2
+        non_nan_frac = th.Tensor([0.999955096,0.217191675,0.229618986,0.531915849,0.122942814,0.598969443,0.030518198,0.059767844,0.564112351])
         self.weighting = var*non_nan_frac
-        self.stdev.to(device)
-        self.non_nan_frac.to(device)
     def forward(self,y_hat,y):
         unscaled_loss = self.LossFun(y_hat,y)
         unscaled_loss = th.mean(unscaled_loss,dim=0)
