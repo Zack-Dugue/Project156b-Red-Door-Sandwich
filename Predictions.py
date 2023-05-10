@@ -159,7 +159,7 @@ class Predictions:
 
     def bulk_predict(self):
         trainer = pl.Trainer()
-        data_loader = make_dataloader(self.test_ids_filepath, batch_size=32, train=False)
+        data_loader = make_dataloader(self.test_ids_filepath, batch_size=128, num_dataloaders=1, train=False)
         self.predictions = trainer.predict(self.model, data_loader)
         self.predictions = pd.DataFrame(th.cat(self.predictions).numpy())
         
