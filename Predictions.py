@@ -16,7 +16,7 @@ NUM_CLASSES = 9 #this must be the same as in the main script
 
 class Predictions:
     def __init__(self, model_path, mode):
-        self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_sample.csv')
+        self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_ids.csv')
         #this next line should be no longer neccesary
         self.train_labels_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
         self.output_folder = "outputs/"
@@ -52,7 +52,7 @@ class Predictions:
         optimizer = th.optim.Adam(xray_model.parameters(),lr=learning_rate)
         self.model = XrayModule(xray_model, optimizer)
 
-        self.model.load_state_dict(th.load(self.model_path, map_location=th.device('cpu')))
+        self.model.load_state_dict(th.load(self.model_path, map_location=th.device('cuda')))
         self.model.eval()
 
 
@@ -156,10 +156,13 @@ class Predictions:
         time_string = time.strftime("%Y%m%d-%H%M%S")
         filepath = os.path.join(self.output_folder, time_string + '.csv')
         output_df.to_csv(filepath, sep=',', header=True, index=False)
+        print('Finished outputting to:')
+        print(os.path.abspath(filepath))
+
 
     def bulk_predict(self):
-        trainer = pl.Trainer()
-        data_loader = make_dataloader(self.test_ids_filepath, batch_size=32, train=False)
+        trainer = pl.Trainer(accelerator='cuda', devices=1, strategy="auto", num_nodes=1)
+        data_loader = make_dataloader(self.test_ids_filepath, batch_size=128, num_dataloaders=4, train=False)
         self.predictions = trainer.predict(self.model, data_loader)
         self.predictions = pd.DataFrame(th.cat(self.predictions).numpy())
         

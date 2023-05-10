@@ -37,8 +37,8 @@ class XRAYModel(nn.Module):
         super().__init__()
         print("Initializing XRAY Model")
         # self.base_model = tv.models.convnext_base().features
-        # self.base_model = th.load("dino_vitbase8_pretrain.pth")
-        self.base_model = th.hub.load('facebookresearch/dino:main', 'dino_vits8')
+        # self.base_model = th.load("dino_vitbase16_pretrain.pth")
+        self.base_model = th.hub.load('facebookresearch/dino:main', 'dino_vits16')
         print("Base Model Loaded")
         # self.base_model = TestModel()
         self.vit = True
