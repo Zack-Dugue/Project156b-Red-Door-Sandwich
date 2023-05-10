@@ -44,13 +44,13 @@ class XRAYModel(nn.Module):
         self.vit = True
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         # self.fc1 = nn.Linear(768, 2048)
-        self.fc1 = nn.Linear(384,2048)
+        self.fc1 = nn.Linear(384,3000)
         self.act1 = nn.GLU()
         self.drop1 = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(1024,2048)
+        self.fc2 = nn.Linear(1500,3000)
         self.act2 = nn.GLU()
         self.drop2 = nn.Dropout(0.5)
-        self.fc3 = nn.Linear(1024,num_classes)
+        self.fc3 = nn.Linear(1500,num_classes)
         self.act3 = nn.Sigmoid()
         self.eval = False
         print("Finished Initializing xRay Model")
