@@ -3,3 +3,5 @@ experiments/
 experiments/
 lightning_logs/
 dino_deitsmall16_pretrain.pth
+*.pyc
+__pycache__/
