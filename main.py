@@ -52,18 +52,19 @@ class XrayModule(LightningModule):
         losses = losses
         self.logger.experiment.add_scalars('Losses', 
                                            {'train_loss': loss,
-                                            'Enlarged Cardiomediastinum Loss':losses[0],
-                                            'Cardiomegaly':losses[1],
-                                            'Lung Opacity':losses[2],
-                                            'Pneumonia':losses[3],
-                                            'Pleural Effusion':losses[4],
-                                            'Pleural Other':losses[5],
-                                            'Fracture':losses[6],
-                                            'Support Devices':losses[7]},
+                                            'No Finding ' : losses[0],
+                                            'Enlarged Cardiomediastinum ':losses[1],
+                                            'Cardiomegaly':losses[2],
+                                            'Lung Opacity':losses[3],
+                                            'Pneumonia':losses[4],
+                                            'Pleural Effusion':losses[5],
+                                            'Pleural Other':losses[6],
+                                            'Fracture':losses[7],
+                                            'Support Devices':losses[8]},
                                             self.current_epoch)
-        tensorboard_logs = {'train_loss':loss, 'Enlarged Cardiomediastinum Loss' : losses[0],"Cardiomegaly" : losses[1],
-                            "Lung Opacity" :losses[2],"Pneumonia" : losses[3],"Pleural Effusion" : losses[4],
-                            "Pleural Other" : losses[5], "Fracture": losses[6], "Support Devices" : losses[7]}
+        tensorboard_logs = {'train_loss':loss, 'No Finding ' : losses[0],'Enlarged Cardiomediastinum ' : losses[1],"Cardiomegaly" : losses[2],
+                            "Lung Opacity" :losses[3],"Pneumonia" : losses[4],"Pleural Effusion" : losses[5],
+                            "Pleural Other" : losses[6], "Fracture": losses[7], "Support Devices" : losses[8]}
         return {'loss':loss,'log':tensorboard_logs}
 
     def configure_optimizers(self):
