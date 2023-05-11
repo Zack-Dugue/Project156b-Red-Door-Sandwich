@@ -182,7 +182,7 @@ class Predictions:
         self.prediction_df = df
 
     def apply_bulk_predict(self):
-        output_df = pd.concat((self.test_ids, self.prediction_df), axis=1).astype(int)
+        output_df = pd.concat((self.test_ids, self.prediction_df), axis=1).astype(float)
         # rename columns
         column_names = ['Id'] + self.labels.to_list()
         output_df = output_df.rename(columns=dict(zip(output_df.columns, column_names)))
