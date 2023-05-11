@@ -17,15 +17,17 @@ NUM_CLASSES = 9
 # Variance / Variance = 1
 # MSE / Variance
 class Criterion(nn.Module):
-    def __init__(self):
+    def __init__(self, device):
         super().__init__()
-        self.LossFun = nn.MSELoss(reduction = 'None')
+        self.LossFun = nn.MSELoss(reduction = 'none')
+        self.device = device
         var = th.Tensor([0.637237519,0.765471336,0.869690439,0.494558767,0.46360988,0.86843845,0.541910475,0.863346014,0.435933443])**2
         non_nan_frac = th.Tensor([0.999955096,0.217191675,0.229618986,0.531915849,0.122942814,0.598969443,0.030518198,0.059767844,0.564112351])
         self.weighting = var*non_nan_frac
+        self.weighting = self.weighting.to(device)
     def forward(self,y_hat,y):
         unscaled_loss = self.LossFun(y_hat,y)
-        unscaled_loss = th.mean(unscaled_loss,dim=0)
+        unscaled_loss = th.mean(unscaled_loss,dim=0).to(self.device)
         loss = unscaled_loss/self.weighting
         return loss
 
@@ -34,7 +36,7 @@ class XrayModule(LightningModule):
         super(XrayModule,self).__init__()
         self.model = model
         self.optimizer = optimizer
-        self.LossFun = Criterion()
+        self.LossFun = Criterion(self.device)
     def forward(self,x):
         return self.model(x)
 
@@ -43,7 +45,7 @@ class XrayModule(LightningModule):
 
     def training_step(self,batch,batch_idx):
         x ,y  = batch
-        y = y.to(th.float)
+        # y = y.to(th.float)
         (img,nan_mask) = x
         y_hat = self(img)
         losses = self.LossFun(y_hat*nan_mask,y)
@@ -75,7 +77,7 @@ class XrayModule(LightningModule):
         (img, nan_mask) = x
         self.train(False)
         y_hat = self(img)
-        loss = self.LossFun(y_hat * nan_mask, y.to(th.float) )
+        loss = self.LossFun(y_hat * nan_mask, y)
         tensorboard_logs = {'validation_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
     
@@ -93,7 +95,9 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
     accelerator = "cuda"
     devices = 4
     strategy = pl.strategies.DDPStrategy(static_graph = False)
-    profiler = PyTorchProfiler(filename=os.path.join(path, 'perf-logs'))
+    # strategy = "auto"
+    # profiler = PyTorchProfiler(dirpath=path, filename='perf-logs')
+    profiler = None
     logger = TensorBoardLogger(os.path.join(path, 'tb_logs'), name=model_name)
     trainer = pl.Trainer(accelerator = accelerator, devices=devices, max_epochs = num_epochs, strategy=strategy, 
                          num_nodes=num_nodes, log_every_n_steps=50, default_root_dir=path, profiler=profiler,
