@@ -138,6 +138,8 @@ class Predictions:
         
         if self.mode == 'prob':
             output = [int(math.floor(pred*2-1 + random.random())) for pred in prediction]
+        if self.mode == 'none' or self.mode == 'None':
+            output = [pred*2-1 for pred in prediction]
        
         # recalculate index[0] which is No Finding
         output[0] = -1
@@ -172,6 +174,8 @@ class Predictions:
             df = self.predictions.transform(lambda x: round(2*x-1))
         if self.mode == 'prob':
             df = self.predictions.transform(lambda x: int(math.floor(x*2-1 + random.random())))
+        if self.mode == 'None' or self.mode == 'none':
+            df = self.predictions.transform(lambda x: 2*x-1)
         # calculate no findings
         df[0] = df.apply(lambda x: -1 if 1 in x[1:].unique() else 1, axis=1)
         self.prediction_df = df
@@ -190,7 +194,7 @@ if __name__ == "__main__":
         description='Produce a CSV of predictions for upload to eval.ai',
     )
     parser.add_argument('-p', '--path', required=True, help='Path to stored model (.pth)')
-    parser.add_argument('-m', '--mode', choices=['round', 'prob'], required=False, default='round', help='How to select if passed value is between integers')
+    parser.add_argument('-m', '--mode', choices=['round', 'prob', 'none'], required=False, default='round', help='How to select if passed value is between integers')
     
     args = parser.parse_args()
     path = args.path
