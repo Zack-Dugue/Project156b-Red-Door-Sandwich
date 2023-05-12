@@ -13,11 +13,12 @@ class MSE_Class_Act(nn.Module):
         :param num_classes:
         """
         super().__init__()
-        # self.a = nn.Parameter(th.ones_like(num_classes,requires_grad=True))
+        # self.a = nn.Parameter(th.ones_like(num_classes,requires_grad=True))4
+        self.softsign = nn.Softsign()
     def forward(self,x):
         ones =  th.ones_like(x)
         # a = th.repeat(self.a,[x.size(0),1])
-        return ((ones / (ones + (ones/ x)**2))*th.sign(x) + ones)/2
+        return (self.softsign(x) + ones)/2
 
 class MSE_Class_Act2(nn.Module):
     def __init__(self,num_classes):
@@ -80,7 +81,7 @@ class XRAYModel(nn.Module):
         self.act2 = nn.GELU()
         self.drop2 = nn.Dropout(0.5)
         self.fc3 = nn.Linear(2048,num_classes)
-        self.act3 = nn.Softsign()
+        self.act3 = MSE_Class_Act()
         self.eval = False
         print("Finished Initializing xRay Model")
 
