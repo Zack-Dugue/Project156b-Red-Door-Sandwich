@@ -80,7 +80,7 @@ class XRAYModel(nn.Module):
         self.act2 = nn.GELU()
         self.drop2 = nn.Dropout(0.5)
         self.fc3 = nn.Linear(2048,num_classes)
-        self.act3 = nn.Sigmoid()
+        self.act3 = nn.Softsign()
         self.eval = False
         print("Finished Initializing xRay Model")
 
