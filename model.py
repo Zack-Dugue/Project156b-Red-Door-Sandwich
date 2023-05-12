@@ -18,6 +18,22 @@ class MSE_Class_Act(nn.Module):
         ones =  th.ones_like(x)
         # a = th.repeat(self.a,[x.size(0),1])
         return ((ones / (ones + (ones/ x)**2))*th.sign(x) + ones)/2
+
+class MSE_Class_Act2(nn.Module):
+    def __init__(self,num_classes):
+        """
+        Same as MSE one, however, we parameterize a bias towards zero using a value a.
+
+        """
+        super().__init__()
+        self.a = nn.Parameter(th.ones_like(num_classes,requires_grad=True))
+    def forward(self,x):
+        ones =  th.ones_like(x)
+        a = -th.repeat(self.a,[x.size(0),1])**2
+        out = ones / (ones + th.abs(x)**(a)) * th.sign(x)
+        return out
+
+
 class TestModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -57,14 +73,14 @@ class XRAYModel(nn.Module):
         self.vit = True
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         # self.fc1 = nn.Linear(768, 2048)
-        self.fc1 = nn.Linear(384,3000)
-        self.act1 = nn.GLU()
+        self.fc1 = nn.Linear(384,2048)
+        self.act1 = nn.GELU()
         self.drop1 = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(1500,3000)
-        self.act2 = nn.GLU()
+        self.fc2 = nn.Linear(2048,2048)
+        self.act2 = nn.GELU()
         self.drop2 = nn.Dropout(0.5)
-        self.fc3 = nn.Linear(1500,num_classes)
-        self.act3 = MSE_Class_Act()
+        self.fc3 = nn.Linear(2048,num_classes)
+        self.act3 = nn.Sigmoid()
         self.eval = False
         print("Finished Initializing xRay Model")
 
