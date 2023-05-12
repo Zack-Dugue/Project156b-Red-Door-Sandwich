@@ -7,6 +7,7 @@ import pandas as pd
 import torchvision as tv
 from torchvision.io import read_image
 from torch.utils.data import Dataset, DataLoader
+from matplotlib import pyplot as plt
 
 #Use lightning datamap database manager.
 class XrayDataset(Dataset):
@@ -94,7 +95,7 @@ def train_image_transform(crop_size, rot_deg_range, hflip_p):
     """
 
     transform = tv.transforms.Compose([
-        # tv.transforms.Normalize( 0.533048452958796, 0.03490651403764978),
+        tv.transforms.Normalize( 0.533048452958796, 0.3490651403764978),
         tv.transforms.RandomResizedCrop(scale=(.85,1), interpolation= tv.transforms.InterpolationMode.BILINEAR , antialias=True, size=crop_size),
         tv.transforms.RandomRotation(degrees=rot_deg_range, interpolation=tv.transforms.InterpolationMode.BILINEAR,expand=True)
         # tv.transforms.RandomHorizontalFlip(p=hflip_p)
@@ -108,7 +109,7 @@ def validation_image_transform(size):
     :return:
     """
     transform = tv.transforms.Compose([
-        # tv.transforms.Normalize( 0.533048452958796, 0.03490651403764978),
+        tv.transforms.Normalize( 0.533048452958796, 0.3490651403764978),
         tv.transforms.Resize(size, interpolation= tv.transforms.InterpolationMode.BILINEAR, antialias=True),
 
     ])
@@ -116,6 +117,7 @@ def validation_image_transform(size):
 
 
 if __name__ == "__main__":
-    data = XrayDataset(annotations_file="SampleLabels.csv")
+    data = XrayDataset(annotations_file="data/student_labels/train_sample.csv", chexpert=True)
     item = data.__getitem__(0)
-    print(item)
+    plt.imshow(item[0][0].permute(1,2,0))
+    plt.show()
