@@ -91,10 +91,10 @@ class XrayModule(LightningModule):
     #     avg_loss = th.stack([x['loss'] for x in outputs]).mean()
     #     tensorboard_logs = {'val_loss': avg_loss}
     #     return {'val_loss': avg_loss, 'log': tensorboard_logs}
-def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_rate,num_epochs):
+def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_rate,num_epochs, gpus):
 
     accelerator = "cuda"
-    devices = 4
+    devices = gpus
     strategy = pl.strategies.DDPStrategy(static_graph = False)
     # strategy = "auto"
     # profiler = PyTorchProfiler(dirpath=path, filename='perf-logs')
@@ -140,6 +140,7 @@ if __name__ == "__main__":
     parser.add_argument('-b', '--batch_size', help='Batch size', default=512, type=int)
     parser.add_argument('-l', '--learning_rate', help='Learning rate of model', default=.001, type=float)
     parser.add_argument('-e', '--num_epochs', help='Number of epochs', default=20, type=int)
+    parser.add_argument('-g', '--num_gpus', help='Number of gpus per node', default=4, type=int)
     args = parser.parse_args()
 
     path = os.path.join(os.getcwd(), 'experiments', args.path)
@@ -149,6 +150,7 @@ if __name__ == "__main__":
     batch_size = args.batch_size
     lr = args.learning_rate
     NumEpochs = args.num_epochs
+    gpus = args.num_gpus
 
     print(f"Model Name: {model_name} \t num_nodes: {num_nodes} \t num_dataloaders: {num_dataloaders}"
           f"\n batch_size: {batch_size} \t learning_rate: {lr} \t num_epochs: {NumEpochs}")
@@ -161,4 +163,4 @@ if __name__ == "__main__":
             pass
             # raise FileExistsError
     print(f"Experiment Info and Files stored in:{path}")
-    experiment(path,model_name,num_nodes,num_dataloaders,batch_size,lr,NumEpochs)
+    experiment(path,model_name,num_nodes,num_dataloaders,batch_size,lr,NumEpochs, gpus)
