@@ -17,8 +17,9 @@ NUM_CLASSES = 9 #this must be the same as in the main script
 class Predictions:
     def __init__(self, model_path, mode):
         self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_ids.csv')
+        # self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_ids.csv')
         #this next line should be no longer neccesary
-        self.train_labels_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
+        self.train_labels_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
         self.output_folder = "outputs/"
         self.model_path = model_path
         # Choose value probabalistically, or by rounding

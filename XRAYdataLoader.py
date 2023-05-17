@@ -67,7 +67,8 @@ class XrayDataset(Dataset):
         # Might have to reformat this:
         # IE Image,X might need to be ina  tuple or something
         # TODO: Include frontal vs Lateral or PA AP if in file name
-        return (image.to(th.float32), nan_mask), Y
+        print(f"idx - {idx} , image_shape -{image.size()}")
+        return (image, nan_mask), Y
 
 def make_dataloader(annotations_file, batch_size, num_dataloaders, train = True):
     """
@@ -95,9 +96,9 @@ def train_image_transform(crop_size, rot_deg_range, hflip_p):
     """
 
     transform = tv.transforms.Compose([
-        # tv.transforms.Normalize( 0.533048452958796, 0.3490651403764978),
-        tv.transforms.RandomResizedCrop(scale=(.85,1), interpolation= tv.transforms.InterpolationMode.BILINEAR , antialias=True, size=crop_size),
-        tv.transforms.RandomRotation(degrees=rot_deg_range, interpolation=tv.transforms.InterpolationMode.BILINEAR,expand=True)
+        # tv.transforms.Normalize( 0.533048452958796, 0.03490651403764978),
+        tv.transforms.RandomResizedCrop(scale=(.85,1), ratio = (.9,1.1), interpolation= tv.transforms.InterpolationMode.BILINEAR , antialias=True, size=crop_size),
+        tv.transforms.RandomRotation(degrees=rot_deg_range, interpolation=tv.transforms.InterpolationMode.BILINEAR)
         # tv.transforms.RandomHorizontalFlip(p=hflip_p)
     ])
     return transform
