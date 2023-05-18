@@ -97,7 +97,7 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
     accelerator = "auto"
     devices = gpus
     gpus = "auto"
-    strategy = pl.strategies.DDPStrategy(static_graph = False)
+    strategy = pl.strategies.DDPStrategy(static_graph = True)
     # strategy = "auto"
     # profiler = PyTorchProfiler(dirpath=path, filename='perf-logs')
     profiler = None
