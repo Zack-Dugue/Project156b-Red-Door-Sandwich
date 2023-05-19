@@ -67,7 +67,7 @@ class XrayDataset(Dataset):
         # Might have to reformat this:
         # IE Image,X might need to be ina  tuple or something
         # TODO: Include frontal vs Lateral or PA AP if in file name
-        print(f"idx - {idx} , image_shape -{image.size()}")
+        # print(f"idx - {idx} , image_shape -{image.size()}")
         return (image, nan_mask), Y
 
 def make_dataloader(annotations_file, batch_size, num_dataloaders, train = True):
