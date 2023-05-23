@@ -6,7 +6,6 @@ from torch.utils.data import DataLoader , Dataset
 import pandas as pd
 import torchvision as tv
 from torchvision.io import read_image
-from torch.utils.data import Dataset, DataLoader
 from matplotlib import pyplot as plt
 
 #Use lightning datamap database manager.
@@ -117,8 +116,22 @@ def validation_image_transform(size):
     return transform
 
 
+####################################################################################################################
+# For testing
+####################################################################################################################
+
+
 if __name__ == "__main__":
     data = XrayDataset(annotations_file="data/student_labels/train_sample.csv", chexpert=True)
-    item = data.__getitem__(0)
-    plt.imshow(item[0][0].permute(1,2,0))
-    plt.show()
+    pneumonia = []
+    no_pneumonia = []
+    for item in data:
+        image, nan_mask = item[0] # torch tensor of image and nan mask
+        labels = item[1]
+        if labels[4] == 1:
+            pneumonia.append(image.mean())
+        else:
+            no_pneumonia.append(image.mean())
+            
+    print(sum(pneumonia)/len(pneumonia))
+    print(sum(no_pneumonia)/len(no_pneumonia))
