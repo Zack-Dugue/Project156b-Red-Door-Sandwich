@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 #Use lightning datamap database manager.
 class XrayDataset(Dataset):
 
-    def __init__(self, annotations_file, transform=None, target_transform=None,train = True, chexpert = False, brax = False, mimic = False):
+    def __init__(self, annotations_file, transform=None, target_transform=None,train = True, chexpert = False, brax = False, mimic = False, alpha = 0):
         #can we get rid of annotations_file and use boolean parameters and predifined csv filepaths instead?
         assert(chexpert or brax or mimic) #cant run the model without data
         label_list = []
@@ -31,6 +31,7 @@ class XrayDataset(Dataset):
         self.transform = transform
         self.target_transform = target_transform
         self.train = train
+        self.alpha = alpha
 
     def __len__(self):
         return len(self.img_labels)
@@ -49,8 +50,8 @@ class XrayDataset(Dataset):
                 label['Pneumonia'], label['Pleural Effusion'], label['Pleural Other'], label['Fracture'], label['Support Devices'])
             Y = th.tensor(Y, dtype=th.float32)
             Y = th.where(Y == 0.0, .5 , Y)
-            Y = th.where(Y == 1.0, 1.0, Y)
-            Y = th.where(Y == -1.0, 0.0, Y)
+            Y = th.where(Y == 1.0, 1.0-self.alpha, Y)
+            Y = th.where(Y == -1.0, 0.0+self.alpha, Y)
         else:
             Y = th.tensor([0 for _ in range(9)])
         nans = th.isnan(Y)
@@ -68,6 +69,17 @@ class XrayDataset(Dataset):
         # TODO: Include frontal vs Lateral or PA AP if in file name
         # print(f"idx - {idx} , image_shape -{image.size()}")
         return (image, nan_mask), Y
+    def get_img(self,idx):
+        label = self.img_labels.iloc[idx].to_dict()
+        # img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        image = read_image("data/" + label["Path"])
+        image = image.to(th.float32)/255.0
+        return image
+
+    def get_path(self,idx):
+        label = self.img_labels.iloc[idx].to_dict()
+        return "data/" + label["Path"]
+
 
 def make_dataloader(annotations_file, batch_size, num_dataloaders, train = True):
     """
