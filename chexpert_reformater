@@ -1,0 +1,9 @@
+import pandas as pd
+
+
+#Chexpert
+chexpert = pd.read_csv("chexpert.csv")
+
+print(chexpert)
+
+print(chexpert['idx'])

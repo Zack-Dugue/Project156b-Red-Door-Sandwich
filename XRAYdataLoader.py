@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 class XrayDataset(Dataset):
 
     def __init__(self, annotations_file, transform=None, target_transform=None,train = True, chexpert = False, brax = False, mimic = False, alpha = 0):
-        #can we get rid of annotations_file and use boolean parameters and predifined csv filepaths instead?
+        #get rid of annotations_file and use boolean parameters and csv filepath constants instead
         assert(chexpert or brax or mimic) #cant run the model without data
         label_list = []
         chexpertcsv = annotations_file #placeholders for respective csv filepaths
