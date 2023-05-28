@@ -20,7 +20,7 @@ UNIQUE_RUN_ID = str(uuid.uuid4())
 PRINT_STATS_AFTER_BATCH = 50
 OPTIMIZER_LR = 0.0002
 OPTIMIZER_BETAS = (0.5, 0.999)
-GENERATOR_OUTPUT_IMAGE_SHAPE = 28 * 28 * 1
+GENERATOR_OUTPUT_IMAGE_SHAPE = 448 * 448 * 1
 
 # Speed ups
 torch.autograd.set_detect_anomaly(False)
@@ -87,9 +87,9 @@ def get_device():
 def make_directory_for_run():
   """ Make a directory for this training run. """
   print(f'Preparing training run {UNIQUE_RUN_ID}')
-  if not os.path.exists('/runs'):
-    os.mkdir('/runs')
-  os.mkdir(f'/runs/{UNIQUE_RUN_ID}')
+  if not os.path.exists('/home/ssoedarm/runs'):
+    os.mkdir('/home/ssoedarm/runs')
+  os.mkdir(f'/home/ssoedarm/runs/{UNIQUE_RUN_ID}')
 
 
 def generate_image(generator, epoch = 0, batch = 0, device=get_device()):
@@ -104,7 +104,7 @@ def generate_image(generator, epoch = 0, batch = 0, device=get_device()):
     image = images[i]
     # Convert image back onto CPU and reshape
     image = image.cpu().detach().numpy()
-    image = np.reshape(image, (28, 28))
+    image = np.reshape(image, (448, 448))
     # Plot
     plt.subplot(4, 4, i+1)
     plt.imshow(image, cmap='gray')
@@ -132,8 +132,8 @@ def prepare_dataset():
     classes = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly', 'Lung Opacity', 
             'Pneumonia', 'Pleural Effusion', 'Pleural Other', 'Fracture', 'Support Devices']
 
-    xsize = 1024
-    ysize = 1024
+    xsize = 448
+    ysize = 448
 
     print("Getting paths ...")
     train_path = "/home/ssoedarm/Project156b-Red-Door-Sandwich/pneumonia.csv"
@@ -153,8 +153,9 @@ def prepare_dataset():
     X_train = torch.from_numpy(X_train.reshape((-1, 1, xsize, ysize)).astype('float32'))
     y_train = torch.from_numpy((classesdf + 1).to_numpy().astype('float32')[:-1])
     
-    batch_size=256
+    batch_size=BATCH_SIZE
     train_dataset = TensorDataset(X_train, y_train)
+    # print(train_dataset.shape)
     
     trainloader = DataLoader(train_dataset,
                              batch_size=batch_size, 
@@ -287,8 +288,7 @@ def train_dcgan():
   # Train the model
   for epoch in range(NUM_EPOCHS):
     print(f'Starting epoch {epoch}...')
-    perform_epoch(dataloader, generator, discriminator, loss_function, \
-      generator_optimizer, discriminator_optimizer, epoch)
+    perform_epoch(dataloader, generator, discriminator, loss_function, generator_optimizer, discriminator_optimizer, epoch)
   # Finished :-)
   print(f'Finished unique run {UNIQUE_RUN_ID}')
 
