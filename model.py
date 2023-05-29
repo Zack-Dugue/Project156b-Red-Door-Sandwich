@@ -68,13 +68,13 @@ class XRAYModel(nn.Module):
         print("Initializing XRAY Model")
         # self.base_model = tv.models.convnext_base().features
         # self.base_model = th.load("dino_vitbase16_pretrain.pth")
-        self.base_model = th.hub.load('facebookresearch/dino:main', 'dino_vits16')
+        self.base_model = th.hub.load('facebookresearch/dino:main', 'dino_vitb16')
         print("Base Model Loaded")
         # self.base_model = TestModel()
         self.vit = True
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        # self.fc1 = nn.Linear(768, 2048)
-        self.fc1 = nn.Linear(384,2048)
+        self.fc1 = nn.Linear(768, 2048)
+        # self.fc1 = nn.Linear(384,2048)
         self.act1 = nn.GELU()
         self.drop1 = nn.Dropout(0.5)
         self.fc2 = nn.Linear(2048,2048)

@@ -88,10 +88,10 @@ def make_dataloader(annotations_file, batch_size, num_dataloaders, train = True)
     :return:
     """
     if train == True:
-        transform = train_image_transform(crop_size=(448, 448), rot_deg_range=10, hflip_p=0.5)
+        transform = train_image_transform(crop_size=(224, 224), rot_deg_range=10, hflip_p=0.5)
         shuffle = True
     else:
-        transform = validation_image_transform((448,448))
+        transform = validation_image_transform((224,224))
         shuffle = False
     dataset = XrayDataset(annotations_file, transform=transform, target_transform=None, train = train, chexpert=True)
     return DataLoader(dataset, batch_size, shuffle=shuffle, num_workers=num_dataloaders)
