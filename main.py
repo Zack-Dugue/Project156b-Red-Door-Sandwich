@@ -28,9 +28,9 @@ class Criterion(nn.Module):
         self.alpha = alpha.to(device)
     def adjust(self,y):
         y_ones_like = th.ones_like(y).to(self.device)
-        y = y*2 - y_ones_like
+        y = y.to(self.device)*2 - y_ones_like
         y = y * (y_ones_like - self.alpha)
-        y = (y + y_ones_like)/2
+        y = (y.to(self.device) + y_ones_like)/2
         return y
     def forward(self,y_hat,y : th.Tensor,nan_mask):
         y = self.adjust(y)
