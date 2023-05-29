@@ -17,7 +17,7 @@ NUM_CLASSES = 9
 # Variance / Variance = 1
 # MSE / Variance
 class Criterion(nn.Module):
-    def __init__(self, device):
+    def __init__(self, device,alpha = th.Tensor([0.0,0.05,0.05, 0.0,0.1,0.0, 0.15,0.18,0.0])):
         super().__init__()
         self.LossFun = nn.MSELoss(reduction = 'none')
         self.device = device
@@ -25,11 +25,18 @@ class Criterion(nn.Module):
         non_nan_frac = th.Tensor([0.999955096,0.217191675,0.229618986,0.531915849,0.122942814,0.598969443,0.030518198,0.059767844,0.564112351])
         self.weighting = var*non_nan_frac
         self.weighting = self.weighting.to(device)
-    def forward(self,y_hat,y):
+        self.alpha = alpha
+    def adjust(self,y):
+        y = y*2 - th.ones_like(y)
+        y = y * (th.ones_like(y) - self.alpha)
+        y = (y + th.ones_like(y))/2
+        return y
+    def forward(self,y_hat,y : th.Tensor,nan_mask):
+        y = self.adjust(y)
         unscaled_loss = self.LossFun(y_hat,y)
         unscaled_loss = th.mean(unscaled_loss,dim=0).to(self.device)
         loss = unscaled_loss/self.weighting
-        return loss
+        return loss*nan_mask
 
 class XrayModule(LightningModule):
     def __init__(self,model,optimizer=None):
@@ -48,7 +55,8 @@ class XrayModule(LightningModule):
         # y = y.to(th.float)
         (img,nan_mask) = x
         y_hat = self(img)
-        losses = self.LossFun(y_hat*nan_mask,y)
+        losses = self.LossFun(y_hat, y,nan_mask)
+
         # pathologies
         loss = losses.mean()
         losses = losses
@@ -78,7 +86,7 @@ class XrayModule(LightningModule):
         (img, nan_mask) = x
         self.train(False)
         y_hat = self(img)
-        loss = self.LossFun(y_hat * nan_mask, y)
+        loss = self.LossFun(y_hat, y,nan_mask)
         tensorboard_logs = {'validation_loss': loss}
         return {'loss': loss, 'log': tensorboard_logs}
     
