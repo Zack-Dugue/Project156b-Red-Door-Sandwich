@@ -31,7 +31,7 @@ class Criterion(nn.Module):
         y = y.to(self.device)*2 - y_ones_like
         y = y * (y_ones_like - self.alpha)
         y = (y.to(self.device) + y_ones_like)/2
-        return y
+        return y.to(self.device)
     def forward(self,y_hat,y : th.Tensor,nan_mask):
         y = self.adjust(y)
         unscaled_loss = self.LossFun(y_hat,y)
