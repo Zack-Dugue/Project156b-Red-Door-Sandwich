@@ -25,7 +25,7 @@ class Criterion(nn.Module):
         non_nan_frac = th.Tensor([0.999955096,0.217191675,0.229618986,0.531915849,0.122942814,0.598969443,0.030518198,0.059767844,0.564112351])
         self.weighting = var*non_nan_frac
         self.weighting = self.weighting.to(device)
-        self.alpha = alpha
+        self.alpha = alpha.to(device)
     def adjust(self,y):
         y = y*2 - th.ones_like(y)
         y = y * (th.ones_like(y) - self.alpha)
