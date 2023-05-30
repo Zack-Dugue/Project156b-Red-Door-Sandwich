@@ -34,7 +34,7 @@ class Criterion(nn.Module):
         return y.to(self.device)
     def forward(self,y_hat,y : th.Tensor,nan_mask):
         y = self.adjust(y)
-        unscaled_loss = self.LossFun(y_hat,y)
+        unscaled_loss = self.LossFun(y_hat.to(self.device),y.to(self.device))
         unscaled_loss = th.mean(unscaled_loss,dim=0).to(self.device)
         loss = unscaled_loss/self.weighting
         return loss*nan_mask
