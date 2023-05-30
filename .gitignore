@@ -6,5 +6,3 @@ dino_deitsmall16_pretrain.pth
 *.pyc
 __pycache__/
 data/Lung*Segmentation/
-segmentation.py
-segmentationDataLoader.py
