@@ -69,6 +69,7 @@ class XRAYModel(nn.Module):
         # self.base_model = tv.models.convnext_base().features
         # self.base_model = th.load("dino_vitbase16_pretrain.pth")
         self.base_model = th.hub.load('facebookresearch/dino:main', 'dino_vitb16')
+        self.early_norm = nn.BatchNorm2d(3,affine=False)
         print("Base Model Loaded")
         # self.base_model = TestModel()
         self.vit = True
@@ -94,6 +95,8 @@ class XRAYModel(nn.Module):
             return list(self.base_model.parameters()) + list(self.fc1.parameters()) + list(self.fc2.parameters()) + list(self.fc3.parameters()) + list(self.drop1.parameters()) + list(self.drop2.parameters())
     def forward(self,x : th.Tensor):
         x = x.repeat([1,3,1,1])
+        x = self.early_norm(x)
+
         x = self.base_model(x)
         if not self.vit:
             x = self.avg_pool(x)
