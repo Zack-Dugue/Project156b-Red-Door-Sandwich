@@ -15,8 +15,9 @@ from XRAYdataLoader import make_dataloader
 NUM_CLASSES = 9 #this must be the same as in the main script
 
 class Predictions:
-    def __init__(self, model_path, mode):
+    def __init__(self, model_path, mode, phase):
         self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_ids.csv')
+        self.sol_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'solution_ids.csv')
         # self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_ids.csv')
         #this next line should be no longer neccesary
         self.train_labels_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
@@ -25,6 +26,7 @@ class Predictions:
         # Choose value probabalistically, or by rounding
         # Options: 'round', 'prob'
         self.mode = mode
+        self.phase = phase
         
         self.ingest_test_csv()
         self.ingest_train_csv()
@@ -37,7 +39,10 @@ class Predictions:
 
 
     def ingest_test_csv(self):
-        df = pd.read_csv(self.test_ids_filepath, sep=',', header='infer')
+        if self.phase == 'dev':
+            df = pd.read_csv(self.test_ids_filepath, sep=',', header='infer')
+        if self.phase == 'solution':
+            df = pd.read_csv(self.sol_ids_filepath, sep=',', header='infer')
         self.test_ids = df["Id"]
         self.paths_dict = dict(zip(df["Id"], df["Path"]))
 
@@ -200,10 +205,12 @@ if __name__ == "__main__":
     )
     parser.add_argument('-p', '--path', required=True, help='Path to stored model (.pth)')
     parser.add_argument('-m', '--mode', choices=['round', 'prob', 'none'], required=False, default='round', help='How to select if passed value is between integers')
+    parser.add_argument('-r', '--solution_phase', choices=['dev', 'solution'], required=False, default='solution', help='Which solution phase to predict on', type=str)
     
     args = parser.parse_args()
     path = args.path
     mode = args.mode
-    prediction = Predictions(path, mode)
+    phase = args.solution_phase
+    prediction = Predictions(path, mode, phase)
 
     prediction.generate_bulk_predictions()
