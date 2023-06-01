@@ -54,6 +54,7 @@ class XrayModule(LightningModule):
         self.model.train(True)
 
     def training_step(self,batch,batch_idx):
+        self.train(True)
         x ,y  = batch
         # y = y.to(th.float)
         (img,nan_mask) = x
