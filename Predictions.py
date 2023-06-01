@@ -205,7 +205,7 @@ if __name__ == "__main__":
     )
     parser.add_argument('-p', '--path', required=True, help='Path to stored model (.pth)')
     parser.add_argument('-m', '--mode', choices=['round', 'prob', 'none'], required=False, default='round', help='How to select if passed value is between integers')
-    parser.add_argument('p', '--solution_phase', choices=['dev', 'solution'], required=False, default='solution', help='Which solution phase to predict on', type=str)
+    parser.add_argument('-p', '--solution_phase', choices=['dev', 'solution'], required=False, default='solution', help='Which solution phase to predict on', type=str)
     
     args = parser.parse_args()
     path = args.path
