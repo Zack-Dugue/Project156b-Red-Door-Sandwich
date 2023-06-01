@@ -73,14 +73,14 @@ class XRAYModel(nn.Module):
         # self.base_model = TestModel()
         self.vit = True
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = nn.Linear(768, 2048)
+        self.fc1 = nn.Linear(768, 3072)
         # self.fc1 = nn.Linear(384,2048)
         self.act1 = nn.GELU()
         self.drop1 = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(2048,2048)
+        self.fc2 = nn.Linear(3072,3072)
         self.act2 = nn.GELU()
         self.drop2 = nn.Dropout(0.5)
-        self.fc3 = nn.Linear(2048,num_classes)
+        self.fc3 = nn.Linear(3072,num_classes)
         self.act3 = MSE_Class_Act()
         self.eval = False
         print("Finished Initializing xRay Model")
