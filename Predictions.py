@@ -49,11 +49,14 @@ class Predictions:
     
     def load_model(self):
         xray_model = XRAYModel(NUM_CLASSES)
-        learning_rate = .001 #not sure if this matters as no learning will be done
-        optimizer = th.optim.Adam(xray_model.parameters(),lr=learning_rate)
-        self.model = XrayModule(xray_model, optimizer)
-
-        self.model.load_state_dict(th.load(self.model_path, map_location=th.device('cuda')))
+        # learning_rate = .001 #not sure if this matters as no learning will be done
+        # optimizer = th.optim.Adam(xray_model.parameters(),lr=learning_rate)
+        # self.model = XrayModule(xray_model, optimizer)
+        checkpoint = th.load(self.model_path, map_location=th.device('cuda'))
+        # checkpoint = th.load(self.model_path, map_location='cpu')
+        self.model = XrayModule(xray_model)
+        self.model.load_state_dict(checkpoint['state_dict'])
+        # self.model = XrayModule.load_from_checkpoint(checkpoint[''])
         self.model.eval()
 
 
@@ -165,6 +168,7 @@ class Predictions:
 
     def bulk_predict(self):
         trainer = pl.Trainer(accelerator='cuda', devices=1, strategy="auto", num_nodes=1)
+        # trainer = pl.Trainer(accelerator='auto')
         data_loader = make_dataloader(self.test_ids_filepath, batch_size=128, num_dataloaders=4, train=False)
         self.predictions = trainer.predict(self.model, data_loader)
         self.predictions = pd.DataFrame(th.cat(self.predictions).numpy())

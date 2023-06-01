@@ -51,7 +51,7 @@ class XrayModule(LightningModule):
         return self.model(x)
 
     def on_train_epoch_start(self) -> None:
-        self.model.train(False)
+        self.model.train(True)
 
     def training_step(self,batch,batch_idx):
         x ,y  = batch
