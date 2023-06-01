@@ -17,7 +17,7 @@ NUM_CLASSES = 9 #this must be the same as in the main script
 class Predictions:
     def __init__(self, model_path, mode, phase):
         self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_ids.csv')
-        self.sol_ids_filepath = os.path.join(os.getcwd(), 'data', 'labels2023', 'solution2023_path_to_id.csv')
+        self.sol_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'solution_ids.csv')
         # self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_ids.csv')
         #this next line should be no longer neccesary
         self.train_labels_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
