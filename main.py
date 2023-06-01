@@ -35,9 +35,11 @@ class Criterion(nn.Module):
     def forward(self,y_hat,y : th.Tensor,nan_mask):
         y = self.adjust(y)
         unscaled_loss = self.LossFun(y_hat.to(self.device),y.to(self.device))
-        unscaled_loss = th.mean(unscaled_loss,dim=0).to(self.device)
+        # coaunscaled_loss = th.mean(unscaled_loss,dim=0).to(self.device)
         loss = unscaled_loss/self.weighting
-        return loss*nan_mask
+        loss = loss * nan_mask.to(self.device)
+        loss = th.mean(loss, dim=0).to(self.device)
+        return loss
 
 class XrayModule(LightningModule):
     def __init__(self,model,optimizer=None):
@@ -57,14 +59,15 @@ class XrayModule(LightningModule):
         (img,nan_mask) = x
         y_hat = self(img)
         losses = self.LossFun(y_hat, y,nan_mask)
+        # print(losses.shape)
 
         # pathologies
         loss = losses.mean()
         losses = losses
         self.logger.experiment.add_scalars('Losses', 
                                            {'train_loss': loss,
-                                            'No Finding ' : losses[0],
-                                            'Enlarged Cardiomediastinum ':losses[1],
+                                            'No Finding' : losses[0],
+                                            'Enlarged Cardiomediastinum':losses[1],
                                             'Cardiomegaly':losses[2],
                                             'Lung Opacity':losses[3],
                                             'Pneumonia':losses[4],
@@ -73,7 +76,7 @@ class XrayModule(LightningModule):
                                             'Fracture':losses[7],
                                             'Support Devices':losses[8]},
                                             self.current_epoch)
-        tensorboard_logs = {'train_loss':loss, 'No Finding ' : losses[0],'Enlarged Cardiomediastinum ' : losses[1],"Cardiomegaly" : losses[2],
+        tensorboard_logs = {'train_loss':loss, 'No Finding' : losses[0],'Enlarged Cardiomediastinum' : losses[1],"Cardiomegaly" : losses[2],
                             "Lung Opacity" :losses[3],"Pneumonia" : losses[4],"Pleural Effusion" : losses[5],
                             "Pleural Other" : losses[6], "Fracture": losses[7], "Support Devices" : losses[8]}
         return {'loss':loss,'log':tensorboard_logs}
@@ -118,7 +121,7 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
     ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
     train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size, num_dataloaders=num_dataloaders, train=True)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
-    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
+    # ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
     #For now training and validation are done on the same dataset
     validation_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size, num_dataloaders=num_dataloaders, train=False)
     xray_model = XRAYModel(NUM_CLASSES)
