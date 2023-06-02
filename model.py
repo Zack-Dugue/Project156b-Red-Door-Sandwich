@@ -79,10 +79,10 @@ class XRAYModel(nn.Module):
         self.fc1 = nn.Linear(2048, 3072)
         # self.fc1 = nn.Linear(384,2048)
         self.act1 = nn.GELU()
-        self.drop1 = nn.Dropout(0.5)
+        self.drop1 = nn.Dropout(0.45)
         self.fc2 = nn.Linear(3072,3072)
         self.act2 = nn.GELU()
-        self.drop2 = nn.Dropout(0.5)
+        self.drop2 = nn.Dropout(0.45)
         self.fc3 = nn.Linear(3072,num_classes)
         self.act3 = MSE_Class_Act()
         self.eval = False
@@ -97,7 +97,7 @@ class XRAYModel(nn.Module):
             return list(self.base_model.parameters()) + list(self.fc1.parameters()) + list(self.fc2.parameters()) + list(self.fc3.parameters()) + list(self.drop1.parameters()) + list(self.drop2.parameters())
     def forward(self,x : th.Tensor):
         x = x.repeat([1,3,1,1])
-        # x = self.early_norm(x)
+        x = self.early_norm(x)
 
         x = self.base_model(x)
         if not self.vit:

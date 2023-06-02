@@ -7,8 +7,6 @@ import pandas as pd
 import torchvision as tv
 from torchvision.io import read_image
 from matplotlib import pyplot as plt
-import cv2 as cv
-import time
 
 #Use lightning datamap database manager.
 class XrayDataset(Dataset):
@@ -43,10 +41,9 @@ class XrayDataset(Dataset):
 
         label = self.img_labels.iloc[idx].to_dict()
         # img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
-        image = cv.imread("data/" + label["Path"],cv.IMREAD_GRAYSCALE)
-
+        image = read_image("data/clahe/" + label["Path"])
+        image = image.to(th.float32)/255.0
         pid = label["Path"].split("/")[1]
-
 
         if self.train:
             Y = (label["No Finding"], label['Enlarged Cardiomediastinum'], label["Cardiomegaly"], label['Lung Opacity'],
@@ -73,10 +70,9 @@ class XrayDataset(Dataset):
         # print(f"idx - {idx} , image_shape -{image.size()}")
         return (image, nan_mask), Y
     def get_img(self,idx):
-
         label = self.img_labels.iloc[idx].to_dict()
         # img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
-        image = read_image("data/" + label["Path"])
+        image = read_image("data/clahe/" + label["Path"])
         image = image.to(th.float32)/255.0
         return image
 
@@ -99,19 +95,7 @@ def make_dataloader(annotations_file, batch_size, num_dataloaders, train = True)
         shuffle = False
     dataset = XrayDataset(annotations_file, transform=transform, target_transform=None, train = train, chexpert=True)
     return DataLoader(dataset, batch_size, shuffle=shuffle, num_workers=num_dataloaders)
-
-class CustomTransform(object):
-    def __init__(self):
-        self.clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        self.to_tensor = tv.transforms.ToTensor()
-    def __call__(self, image):
-        # image = cv.r
-        image = self.clahe.apply(image)
-        image = self.to_tensor(image)
-        image = image.to(th.float32)/255.0
-        return image
-
-
+    
 def train_image_transform(crop_size, rot_deg_range, hflip_p):
     """
     Returns a transfrom which performs image augmentations during training
@@ -124,10 +108,7 @@ def train_image_transform(crop_size, rot_deg_range, hflip_p):
 
     transform = tv.transforms.Compose([
         # tv.transforms.Normalize( 0.533048452958796, 0.03490651403764978),
-        CustomTransform(),
-
         tv.transforms.RandomResizedCrop(scale=(.85,1), ratio = (.9,1.1), interpolation= tv.transforms.InterpolationMode.BILINEAR , antialias=True, size=crop_size),
-
         tv.transforms.RandomRotation(degrees=rot_deg_range, interpolation=tv.transforms.InterpolationMode.BILINEAR)
         # tv.transforms.RandomHorizontalFlip(p=hflip_p)
     ])
@@ -141,7 +122,6 @@ def validation_image_transform(size):
     """
     transform = tv.transforms.Compose([
         # tv.transforms.Normalize( 0.533048452958796, 0.3490651403764978),
-        CustomTransform(),
         tv.transforms.Resize(size, interpolation= tv.transforms.InterpolationMode.BILINEAR, antialias=True),
 
     ])
@@ -153,22 +133,17 @@ def validation_image_transform(size):
 ####################################################################################################################
 
 
-
 if __name__ == "__main__":
-    # data = XrayDataset(annotations_file="data/student_labels/train_sample.csv", chexpert=True)
-    data = make_dataloader("data/student_labels/train_sample.csv", 1,0)
+    data = XrayDataset(annotations_file="data/student_labels/train_sample.csv", chexpert=True)
     pneumonia = []
     no_pneumonia = []
-    start = time.time()
-    for i, item in enumerate(data):
-        print(f"\rimage {i}",end="")
+    for item in data:
         image, nan_mask = item[0] # torch tensor of image and nan mask
         labels = item[1]
-        # if labels[4] == 1:
-        #     pneumonia.append(image.mean())
-        # else:
-        #     no_pneumonia.append(image.mean())
-    finish = time.time()
-    print(f"\ndone. It took {finish-start} seconds")
+        if labels[4] == 1:
+            pneumonia.append(image.mean())
+        else:
+            no_pneumonia.append(image.mean())
+            
     print(sum(pneumonia)/len(pneumonia))
     print(sum(no_pneumonia)/len(no_pneumonia))
