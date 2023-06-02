@@ -108,10 +108,10 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
 
     # accelerator = "cuda"
     accelerator = "auto"
-    # devices = gpus
-    devices = "auto"
-    # strategy = pl.strategies.DDPStrategy(static_graph = True)
-    strategy = "auto"
+    devices = gpus
+    # devices = "auto"
+    strategy = pl.strategies.DDPStrategy(static_graph = True)
+    # strategy = "auto"
     # profiler = PyTorchProfiler(dirpath=path, filename='perf-logs')
     profiler = None
     logger = TensorBoardLogger(os.path.join(path, 'tb_logs'), name=model_name)
@@ -119,7 +119,7 @@ def experiment(path,model_name, num_nodes,num_dataloaders,batch_size,learning_ra
                          num_nodes=num_nodes, log_every_n_steps=50, default_root_dir=path, profiler=profiler,
                          logger=logger)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
-    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
+    ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
     train_loader = make_dataloader(ANNOTATIONS_LABELS, batch_size, num_dataloaders=num_dataloaders, train=True)
     # ANNOTATIONS_LABELS = "C:\\Users\\dugue\\PycharmProjects\\Project156b-Red-Door-Sandwich\\data\\student_labels\\train_sample.csv"
     # ANNOTATIONS_LABELS = os.path.join(os.getcwd(), 'data', 'student_labels', 'train2023.csv')
