@@ -76,7 +76,7 @@ class XRAYModel(nn.Module):
         # self.base_model = TestModel()
         self.vit = True
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = nn.Linear(2048, 3072)
+        self.fc1 = nn.Linear(1024, 3072)
         # self.fc1 = nn.Linear(384,2048)
         self.act1 = nn.GELU()
         self.drop1 = nn.Dropout(0.45)
