@@ -68,13 +68,14 @@ class XRAYModel(nn.Module):
         print("Initializing XRAY Model")
         # self.base_model = tv.models.convnext_base().features
         # self.base_model = th.load("dino_vitbase16_pretrain.pth")
-        self.base_model = th.hub.load('facebookresearch/dino:main', 'dino_vitb16')
-        self.early_norm = nn.BatchNorm2d(3,affine=False)
+        # self.base_model = th.hub.load('facebookresearch/dino:main', 'dino_vitb16')
+        self.base_model = th.hub.load('facebookresearch/dino:main', 'dino_resnet50')
+        # self.early_norm = nn.BatchNorm2d(3,affine=False)
         print("Base Model Loaded")
         # self.base_model = TestModel()
-        self.vit = True
+        self.vit = False
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = nn.Linear(768, 3072)
+        self.fc1 = nn.Linear(2048, 3072)
         # self.fc1 = nn.Linear(384,2048)
         self.act1 = nn.GELU()
         self.drop1 = nn.Dropout(0.5)
@@ -95,11 +96,11 @@ class XRAYModel(nn.Module):
             return list(self.base_model.parameters()) + list(self.fc1.parameters()) + list(self.fc2.parameters()) + list(self.fc3.parameters()) + list(self.drop1.parameters()) + list(self.drop2.parameters())
     def forward(self,x : th.Tensor):
         x = x.repeat([1,3,1,1])
-        x = self.early_norm(x)
+        # x = self.early_norm(x)
 
         x = self.base_model(x)
         if not self.vit:
-            x = self.avg_pool(x)
+            # x = self.avg_pool(x)
             x = x.view(x.size(0),-1)
 
         x = self.fc1(x)
