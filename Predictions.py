@@ -175,7 +175,10 @@ class Predictions:
     def bulk_predict(self):
         trainer = pl.Trainer(accelerator='cuda', devices=self.gpus, strategy="auto", num_nodes=1)
         # trainer = pl.Trainer(accelerator='auto')
-        data_loader = make_dataloader(self.test_ids_filepath, batch_size=400, num_dataloaders=4, train=False)
+        if self.phase == 'dev':
+            data_loader = make_dataloader(self.test_ids_filepath, batch_size=400, num_dataloaders=4, train=False)
+        if self.phase == 'solution':
+            data_loader = make_dataloader(self.sol_ids_filepath, batch_size=400, num_dataloaders=4, train=False)
         self.predictions = trainer.predict(self.model, data_loader)
         self.predictions = pd.DataFrame(th.cat(self.predictions).numpy())
         
