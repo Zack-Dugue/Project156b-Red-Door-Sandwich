@@ -15,9 +15,10 @@ from XRAYdataLoader import make_dataloader
 NUM_CLASSES = 9 #this must be the same as in the main script
 
 class Predictions:
-    def __init__(self, model_path, mode, phase):
+    def __init__(self, model_path, mode, phase, gpus):
         self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_ids.csv')
         self.sol_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'solution_ids.csv')
+        self.gpus = gpus
         # self.test_ids_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'test_ids.csv')
         #this next line should be no longer neccesary
         self.train_labels_filepath = os.path.join(os.getcwd(), 'data', 'student_labels', 'train_sample.csv')
@@ -172,9 +173,9 @@ class Predictions:
 
 
     def bulk_predict(self):
-        trainer = pl.Trainer(accelerator='cuda', devices=1, strategy="auto", num_nodes=1)
+        trainer = pl.Trainer(accelerator='cuda', devices=self.gpus, strategy="auto", num_nodes=1)
         # trainer = pl.Trainer(accelerator='auto')
-        data_loader = make_dataloader(self.test_ids_filepath, batch_size=128, num_dataloaders=4, train=False)
+        data_loader = make_dataloader(self.test_ids_filepath, batch_size=400, num_dataloaders=4, train=False)
         self.predictions = trainer.predict(self.model, data_loader)
         self.predictions = pd.DataFrame(th.cat(self.predictions).numpy())
         
@@ -206,11 +207,13 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--path', required=True, help='Path to stored model (.pth)')
     parser.add_argument('-m', '--mode', choices=['round', 'prob', 'none'], required=False, default='round', help='How to select if passed value is between integers')
     parser.add_argument('-r', '--solution_phase', choices=['dev', 'solution'], required=False, default='solution', help='Which solution phase to predict on', type=str)
+    parser.add_argument('-g', '--gpus', default=1, help="Number of gpu's to use for training")
     
     args = parser.parse_args()
     path = args.path
     mode = args.mode
     phase = args.solution_phase
-    prediction = Predictions(path, mode, phase)
+    gpus = args.gpus
+    prediction = Predictions(path, mode, phase, gpus)
 
     prediction.generate_bulk_predictions()
