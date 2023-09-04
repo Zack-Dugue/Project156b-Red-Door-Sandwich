@@ -1,5 +1,5 @@
 # Project156b-Red-Door-Sandwich
-A Computer vision model to diagnose a set pathologies from chest X-rays.
+A Computer vision model to diagnose pathologies from chest X-rays.
 
 The project utilizes pytorch lightning to optimize training on multiple nodes in the Caltech HPC.
 
